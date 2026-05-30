@@ -3,7 +3,7 @@
 </script>
 
 <div class="overflow-x-auto">
-  <table class="table">
+  <table class="table table-sm">
     <!-- head -->
     <thead>
       <tr>
