@@ -19,6 +19,7 @@
     "vite": "^8.0.12"
   },
   "dependencies": {
+    "@mateothegreat/svelte5-router": "^2.16.19",
     "@tailwindcss/vite": "^4.3.0",
     "daisyui": "^5.5.20",
     "tailwindcss": "^4.3.0"
