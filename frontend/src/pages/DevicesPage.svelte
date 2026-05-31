@@ -1,6 +1,5 @@
 <div class="space-y-4">
   <h1 class="text-3xl font-bold">Devices</h1>
-
   <div class="overflow-x-auto">
     <table class="table table-zebra">
       <thead>
