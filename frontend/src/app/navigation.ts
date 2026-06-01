@@ -1,10 +1,13 @@
+import { UsbIcon, Computer } from "@lucide/svelte";
 export const navigation = [
   {
-    label: "Dashboard",
+    label: "UsbDevices",
     href: "/",
+    icon: UsbIcon
   },
   {
-    label: "Devices",
-    href: "/devices",
+    label: "OVT",
+    href: "/ovt",
+    icon: Computer
   },
 ];

@@ -22,13 +22,15 @@
   <header class="navbar bg-base-200 border-b border-base-300">
     <div class="ml-auto flex gap-2 pr-2">
       {#each navigation as item}
+        {@const Icon = item.icon}
         <a
           use:route
           href={item.href}
           class="btn btn-ghost btn-sm"
           class:btn-active={currentPath === item.href}
+          onclick={updatePath}
         >
-          {item.label}
+          <Icon />
         </a>
       {/each}
     </div>
