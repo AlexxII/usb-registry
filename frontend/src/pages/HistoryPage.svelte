@@ -1,3 +1,6 @@
+<div>
+  <h1>История подключений</h1>
+</div>
 <div class="space-y-4">
   <h1 class="text-3xl font-bold">Devices</h1>
   <div class="overflow-x-auto">

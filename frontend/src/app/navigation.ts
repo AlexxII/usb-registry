@@ -1,13 +1,18 @@
-import { UsbIcon, Computer } from "@lucide/svelte";
+import { UsbIcon, House, CalendarCheck2Icon } from "@lucide/svelte";
 export const navigation = [
   {
-    label: "UsbDevices",
+    label: "Connected",
     href: "/",
-    icon: UsbIcon
+    icon: House
   },
   {
-    label: "OVT",
-    href: "/ovt",
-    icon: Computer
+    label: "History",
+    href: "/history",
+    icon: CalendarCheck2Icon
   },
+  {
+    label: "Management",
+    href: "/device-manage",
+    icon: UsbIcon
+  }
 ];
