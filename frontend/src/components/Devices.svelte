@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { usbDevices } from "../data.js";
+  import { usbDevices } from "../data";
 </script>
 
 <div class="overflow-x-auto">

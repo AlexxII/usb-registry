@@ -1,22 +1,7 @@
 <script lang="ts">
   import UsbDeviceCard from "../components/UsbDeviceCard.svelte";
-  import { usbDevices as devices } from "../data.js";
+  import { usbDevices as devices } from "../data";
 
-  type UsbFlashDevice = {
-    id: string;
-    label: string;
-    manufacturer: string;
-    serial: string;
-    filesystem: string;
-    capacity: string;
-    status: "mounted" | "blocked" | "readonly";
-    department: string;
-    registerNumber: string | number;
-    prescription: string | number;
-    zones: string;
-    lastSeen: string;
-    firstSeen: string;
-  };
 
 </script>
 

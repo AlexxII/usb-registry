@@ -1,8 +1,8 @@
 <script lang="ts">
-  import UsbDevices from "../components/UsbDevices.svelte";
+  import Devices from "../components/Devices.svelte";
 </script>
 
 <div class="space-y-4">
   <h1 class="text-3xl font-bold">Управление устройствами</h1>
-  <UsbDevices />
+  <Devices />
 </div>

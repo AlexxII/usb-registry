@@ -1,5 +1,6 @@
 <script lang="ts">
   const { device } = $props();
+
   const statusConfig = {
     mounted: {
       label: "Mounted",
