@@ -28,7 +28,7 @@
             <td>{usb.manufacturer}</td>
             <td>
               {#if usb.registered && !usb.secret}
-                <div class="tooltip" data-tip="Для ИНТЕРНЕТ">
+                <div class="tooltip" data-tip="Для ИНТЕРНЕТа">
                   <div class="badge badge-sm bg-red-700">И</div>
                 </div>
               {:else}
