@@ -1,34 +1,37 @@
-<div>
-  <h1>История подключений</h1>
-</div>
+<script lang="ts">
+  import { usbDevices } from "../data";
+</script>
+
 <div class="space-y-4">
-  <h1 class="text-3xl font-bold">Devices</h1>
+  <h1 class="text-3xl font-bold">История подключений</h1>
   <div class="overflow-x-auto">
     <table class="table table-zebra">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Status</th>
+          <th>Производитель</th>
+          <th>Ответственный</th>
+          <th>Рег №</th>
+          <th>s/n</th>
+          <th>Предписание</th>
+          <th>Зоны 2</th>
+          <th>Назначение</th>
+          <th>Прочее</th>
         </tr>
       </thead>
 
       <tbody>
-        <tr>
-          <td>1</td>
-          <td>Router</td>
-          <td>
-            <div class="badge badge-success">Online</div>
-          </td>
-        </tr>
-
-        <tr>
-          <td>2</td>
-          <td>Switch</td>
-          <td>
-            <div class="badge badge-error">Offline</div>
-          </td>
-        </tr>
+        {#each usbDevices as usb}
+          <tr>
+          <td>{usb.manufacturer}</td>
+          <td>{usb.owner}</td>
+          <td>{usb.registerNumber}</td>
+          <td>{usb.serial}</td>
+          <td>{usb.prescription}</td>
+          <td>{usb.zones}</td>
+          <td>{usb.capacity}</td>
+          <td>{usb.secclass}</td>
+          </tr>
+        {/each}
       </tbody>
     </table>
   </div>

@@ -1,20 +1,5 @@
 <script lang="ts">
   const { device } = $props();
-
-  const statusConfig = {
-    mounted: {
-      label: "Mounted",
-      class: "badge-success",
-    },
-    blocked: {
-      label: "Blocked",
-      class: "badge-error",
-    },
-    readonly: {
-      label: "Read Only",
-      class: "badge-warning",
-    },
-  };
 </script>
 
 <div class="card bg-base-200 border border-base-300 shadow-md w-full max-w-xl">
@@ -29,9 +14,15 @@
         <p class="text-sm text-base-content/60">USB Flash Device</p>
       </div>
 
-      <div class={`badge ${statusConfig[device.status].class}`}>
-        {statusConfig[device.status].label}
-      </div>
+      {#if device.registered}
+        <div class="tooltip" data-tip="Зарегистрирован">
+          <div aria-label="status" class="status status-xl bg-green-700"></div>
+        </div>
+      {:else}
+        <div class="tooltip" data-tip="Нет информации">
+          <div aria-label="status" class="status status-xl bg-red-700"></div>
+        </div>
+      {/if}
     </div>
 
     <!-- system info -->
@@ -81,49 +72,65 @@
     </div>
 
     <!-- registry info -->
-    <div class="rounded-box border border-secondary/20 bg-secondary/5 p-4">
-      <div class="flex items-center gap-2 mb-4">
-        <div class="badge badge-secondary badge-sm">Registry</div>
+    {#if device.registered}
+      <div class="rounded-box border border-secondary/20 bg-secondary/5 p-4">
+        <div class="flex items-center gap-2 mb-4">
+          <div class="badge badge-secondary badge-sm">Registry</div>
 
-        <span class="text-sm text-base-content/60">
-          Учетные данные устройства
-        </span>
+          <span class="text-sm text-base-content/60">
+            Учетные данные устройства
+          </span>
+          {#if device.secret}
+            <div class="tooltip" data-tip="Гриф секретности">
+              <div class="badge badge-sm bg-blue-700">{device.secclass}</div>
+            </div>
+          {:else}
+            <div class="tooltip" data-tip="Доложить в 13 группу (тел. 30-39)">
+              <div class="badge badge-sm bg-red-700">ИНТЕРНЕТ</div>
+            </div>
+          {/if}
+          {#if device.special}
+            <div class="tooltip" data-tip="Специальное делопроизводство">
+              <div class="badge badge-sm bg-red-700">СД</div>
+            </div>
+          {/if}
+        </div>
+
+        <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+          <div>
+            <p class="text-base-content/60 text-sm">Ответственный</p>
+
+            <p class="font-medium">
+              {device.owner}
+            </p>
+          </div>
+
+          <div>
+            <p class="text-base-content/60 text-sm">Регистрационный №</p>
+
+            <p class="font-medium">
+              {device.registerNumber}
+            </p>
+          </div>
+
+          <div>
+            <p class="text-base-content/60 text-sm">Предписание</p>
+
+            <p class="font-medium">
+              {device.prescription}
+            </p>
+          </div>
+
+          <div>
+            <p class="text-base-content/60 text-sm">Зоны (м.)</p>
+
+            <p class="font-medium">
+              {device.zones}
+            </p>
+          </div>
+        </div>
       </div>
-
-      <div class="grid grid-cols-2 gap-x-6 gap-y-4">
-        <div>
-          <p class="text-base-content/60 text-sm">Подразделение</p>
-
-          <p class="font-medium">
-            {device.department}
-          </p>
-        </div>
-
-        <div>
-          <p class="text-base-content/60 text-sm">Регистрационный №</p>
-
-          <p class="font-medium">
-            {device.registerNumber}
-          </p>
-        </div>
-
-        <div>
-          <p class="text-base-content/60 text-sm">Предписание</p>
-
-          <p class="font-medium">
-            {device.prescription}
-          </p>
-        </div>
-
-        <div>
-          <p class="text-base-content/60 text-sm">Зоны</p>
-
-          <p class="font-medium">
-            {device.zones}
-          </p>
-        </div>
-      </div>
-    </div>
+    {/if}
 
     <!-- timestamps -->
     <div class="grid grid-cols-2 gap-6">
