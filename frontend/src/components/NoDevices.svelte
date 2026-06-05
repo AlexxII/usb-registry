@@ -8,7 +8,7 @@
       <div class="mb-6 flex justify-center">
         <div class="avatar placeholder">
           <div class="bg-base-300 text-base-content rounded-full w-24">
-            <UsbSvg size="120"/>
+            <UsbSvg size="100"/>
           </div>
         </div>
       </div>

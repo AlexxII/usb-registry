@@ -1,6 +1,27 @@
 <script lang="ts">
   import { usbDevices } from "../data";
+  import UsbDeviceCard from "../components/UsbDeviceCard.svelte";
+
+  // 1. Создаем реактивное состояние для выбранного устройства
+  let selectedDevice = $state<any>(null);
+  let modalRef = $state<HTMLDialogElement | null>(null);
+
+  function openDetails(device: any) {
+    selectedDevice = device;
+    modalRef?.showModal();
+  }
 </script>
+
+<dialog bind:this={modalRef} id="my_modal_2" class="modal">
+  <div class="modal-box max-w-2xl">
+    {#if selectedDevice}
+      <UsbDeviceCard device={selectedDevice} />
+    {/if}
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
 
 <div class="space-y-4">
   <h1 class="text-3xl font-bold">История подключений</h1>
@@ -50,7 +71,12 @@
                 -
               {/if}
             </td>
-            <td> <button class="btn btn-ghost btn-xs">Подробнее</button></td>
+            <td>
+              <button
+                class="btn btn-ghost btn-xs"
+                onclick={() => openDetails(usb)}>Подробнее</button
+              ></td
+            >
           </tr>
         {/each}
       </tbody>

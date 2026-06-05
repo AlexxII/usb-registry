@@ -1,8 +1,8 @@
 <script lang="ts">
   import UsbDeviceCard from "../components/UsbDeviceCard.svelte";
   import NoDevices from "../components/NoDevices.svelte";
-  import { usbDevices as devices } from "../data";
-  // let devices: any[] = [];
+  // import { usbDevices as devices } from "../data";
+  let devices: any[] = [];
 </script>
 
 {#if devices.length > 0}
