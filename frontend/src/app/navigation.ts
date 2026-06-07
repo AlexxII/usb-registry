@@ -4,7 +4,7 @@ export const navigation = [
     label: "Connected",
     href: "/",
     icon: House,
-    title: "Домой"
+    title: ""
   },
   {
     label: "History",

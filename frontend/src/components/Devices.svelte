@@ -13,13 +13,15 @@
           </label>
         </th>
         <th>Производитель</th>
-        <th>Модель</th>
-        <th>Серийный номер</th>
-        <th>VID</th>
-        <th>PID</th>
+        <th>s/n</th>
+        <th>Номер при СП</th>
         <th>Емкость</th>
+        <th>Рег. номер</th>
         <th>Владелец</th>
-        <th>Подразделение</th>
+        <th>Гриф</th>
+        <th>Макс.гриф</th>
+        <th>Предписание</th>
+        <th>Зоны 2</th>
       </tr>
     </thead>
     <tbody>
@@ -30,14 +32,16 @@
               <input type="checkbox" class="checkbox" />
             </label>
           </th>
-          <td>{usb.vendor}</td>
-          <td>{usb.product}</td>
+          <td>{usb.manufacturer}</td>
           <td>{usb.serial}</td>
-          <th>{usb.vid}</th>
-          <th>{usb.pid}</th>
-          <th>{usb.capacityGb}</th>
+          <td>{usb.spnumber}</td>
+          <th>{usb.capacity}</th>
+          <th>{usb.registerNumber}</th>
           <th>{usb.owner}</th>
-          <th>{usb.department}</th>
+          <th>{usb.secclass}</th>
+          <th>{usb.maxsecclass}</th>
+          <th>{usb.prescription}</th>
+          <th>{usb.zones}</th>
         </tr>
       {/each}
     </tbody>

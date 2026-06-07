@@ -24,7 +24,9 @@
 </dialog>
 
 <div class="space-y-4">
-  <h1 class="text-3xl font-bold">История подключений</h1>
+  <div class="flex justify-end">
+    <button class="btn btn-info btn-sm">Обновить</button>
+  </div>
   <div class="overflow-x-auto">
     <table class="table table-zebra">
       <thead>
@@ -49,7 +51,7 @@
             <td>{usb.manufacturer}</td>
             <td>
               {#if usb.registered && !usb.secret}
-                <div class="tooltip" data-tip="Для ИНТЕРНЕТа">
+                <div class="tooltip" data-tip="ИНТЕРНЕТ">
                   <div class="badge badge-sm bg-red-700">И</div>
                 </div>
               {:else}
@@ -63,10 +65,12 @@
             <td>{usb.zones ?? "-"}</td>
             <td>
               {#if usb.registered && usb.special}
-                <div
-                  aria-label="status"
-                  class="status status-xl bg-red-700"
-                ></div>
+                <div class="tooltip" data-tip="СПЕЦИАЛЬНОЕ ДЕЛОПРОИЗВОДСТВО">
+                  <div
+                    aria-label="status"
+                    class="status status-xl bg-red-700"
+                  ></div>
+                </div>
               {:else}
                 -
               {/if}
