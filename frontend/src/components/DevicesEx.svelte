@@ -1,6 +1,7 @@
 <script lang="ts">
   import { usbDevices } from "../data";
   import type { UsbFlashDevice } from "../types";
+  import { SquarePen } from "@lucide/svelte";
 
   let search = $state("");
 
@@ -115,9 +116,11 @@
       Выбрано: {selected.size}
     </div>
 
-    <button class="btn btn-primary btn-sm" disabled={selected.size === 0}>
-      Редактировать выбранные ({selected.size})
-    </button>
+    <div class="tooltip tooltip-left" data-tip="Редактировать">
+      <button class="btn btn-primary btn-sm" disabled={selected.size === 0}>
+        <SquarePen />
+      </button>
+    </div>
   </div>
 
   <!-- table -->
