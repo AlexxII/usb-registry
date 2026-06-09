@@ -112,15 +112,6 @@
       <span>Секретные</span>
     </label>
 
-    <div class="ml-auto badge badge-outline">
-      Выбрано: {selected.size}
-    </div>
-
-    <div class="tooltip tooltip-left" data-tip="Редактировать">
-      <button class="btn btn-primary btn-sm" disabled={selected.size === 0}>
-        <SquarePen />
-      </button>
-    </div>
   </div>
 
   <!-- table -->
@@ -206,6 +197,11 @@
 
             <td>{usb.prescription ?? "-"}</td>
             <td>{usb.zones ?? "-"}</td>
+            <td>
+              <button class="btn btn-sm">
+                <SquarePen />
+              </button>
+            </td>
           </tr>
         {/each}
       </tbody>
