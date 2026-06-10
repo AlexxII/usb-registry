@@ -10,6 +10,7 @@
 
   let onlyRegistered = $state(false);
   let onlySecret = $state(false);
+  let onlyInternet = $state(false);
 
   let selected = $state<Set<string>>(new Set());
 
@@ -53,6 +54,10 @@
 
     if (onlySecret) {
       result = result.filter((d) => d.secret);
+    }
+
+    if (onlyInternet) {
+      result = result.filter((d) => !d.secret).filter((d) => d.registered);
     }
 
     result.sort((a, b) => {
@@ -100,12 +105,12 @@
   let modalRef = $state<HTMLDialogElement | null>(null);
 
   function editDevice(device: UsbFlashDevice) {
-  console.log(device)
+    console.log(device);
     selectedDevice = device;
     modalRef?.showModal();
   }
 
-  function saveDevice(payload) {
+  function saveDevice(payload: UsbFlashDevice) {
     console.log(payload);
   }
 </script>
@@ -147,6 +152,15 @@
         class="checkbox checkbox-sm"
       />
       <span>Секретные</span>
+    </label>
+
+    <label class="label cursor-pointer gap-2">
+      <input
+        bind:checked={onlyInternet}
+        type="checkbox"
+        class="checkbox checkbox-sm"
+      />
+      <span>Интернет</span>
     </label>
 
     <div class="ml-auto">
