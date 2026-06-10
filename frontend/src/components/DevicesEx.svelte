@@ -2,7 +2,9 @@
   import { usbDevices } from "../data";
   import type { UsbFlashDevice } from "../types";
   import { SquarePen } from "@lucide/svelte";
-  import UsbDeviceAddForm from "./UsbDeviceAddForm.svelte";
+  import UsbDeviceForm from "./UsbDeviceForm.svelte";
+
+  let selectedDevice = $state<UsbFlashDevice | undefined>();
 
   let search = $state("");
 
@@ -95,15 +97,26 @@
 
     selected = next;
   }
-
   let modalRef = $state<HTMLDialogElement | null>(null);
+
+  function editDevice(device: UsbFlashDevice) {
+  console.log(device)
+    selectedDevice = device;
+    modalRef?.showModal();
+  }
+
+  function saveDevice(payload) {
+    console.log(payload);
+  }
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<dialog bind:this={modalRef} id="my_modal_2" class="modal">
+<dialog bind:this={modalRef} class="modal">
   <div class="modal-box max-w-2xl">
-    <UsbDeviceAddForm />
+    {#key selectedDevice?.id ?? "new"}
+      <UsbDeviceForm device={selectedDevice} {saveDevice} />
+    {/key}
   </div>
   <form method="dialog" class="modal-backdrop">
     <button>close</button>
@@ -238,7 +251,7 @@
             <td class="text-center">{usb.maxsecclass ?? "-"}</td>
             <td class="text-center">{usb.zones ?? "-"}</td>
             <td class="text-center">
-              <button class="btn btn-sm">
+              <button class="btn btn-sm" onclick={() => editDevice(usb)}>
                 <SquarePen />
               </button>
             </td>
