@@ -2,6 +2,7 @@
   import { usbDevices } from "../data";
   import type { UsbFlashDevice } from "../types";
   import { SquarePen } from "@lucide/svelte";
+  import UsbDeviceAddForm from "./UsbDeviceAddForm.svelte";
 
   let search = $state("");
 
@@ -13,12 +14,18 @@
   let sortField = $state<keyof UsbFlashDevice>("manufacturer");
   let sortDirection = $state<"asc" | "desc">("asc");
 
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.key === "Escape") {
+      selected = new Set();
+      return;
+    }
+  }
+
   function toggleSort(field: keyof UsbFlashDevice) {
     if (sortField === field) {
       sortDirection = sortDirection === "asc" ? "desc" : "asc";
       return;
     }
-
     sortField = field;
     sortDirection = "asc";
   }
@@ -73,6 +80,10 @@
     selected = new Set(filteredDevices.map((d) => d.id));
   }
 
+  function addNewDevice() {
+    modalRef?.showModal();
+  }
+
   function toggleDevice(id: string) {
     const next = new Set(selected);
 
@@ -84,7 +95,20 @@
 
     selected = next;
   }
+
+  let modalRef = $state<HTMLDialogElement | null>(null);
 </script>
+
+<svelte:window onkeydown={handleKeyDown} />
+
+<dialog bind:this={modalRef} id="my_modal_2" class="modal">
+  <div class="modal-box max-w-2xl">
+    <UsbDeviceAddForm />
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
 
 <div class="space-y-4">
   <!-- filters -->
@@ -112,6 +136,15 @@
       <span>Секретные</span>
     </label>
 
+    <div class="ml-auto">
+      <button class="btn btn-success btn-sm" onclick={addNewDevice}>
+        Добавить
+      </button>
+
+      <button class="btn btn-primary btn-sm" disabled={selected.size === 0}>
+        Экспорт
+      </button>
+    </div>
   </div>
 
   <!-- table -->
@@ -120,7 +153,7 @@
     <table class="table table-zebra table-pin-rows">
       <thead>
         <tr>
-          <th>
+          <th class="text-center">
             <input
               checked={allSelected}
               onchange={toggleAll}
@@ -129,46 +162,50 @@
             />
           </th>
 
-          <th>
-            <button
-              class="btn btn-ghost btn-xs"
-              onclick={() => toggleSort("manufacturer")}
-            >
-              Производитель
-            </button>
+          <th class="text-center">
+            Производитель
+            <br />
+            Модель</th
+          >
+          <th class="text-center">Емкость</th>
+          <th class="text-center">s/n</th>
+          <th class="whitespace-normal text-center">
+            Заводской номер
+            <br />
+            (№ при СП)
           </th>
 
-          <th>
-            <button
-              class="btn btn-ghost btn-xs"
-              onclick={() => toggleSort("serial")}
-            >
-              s/n
-            </button>
-          </th>
-
-          <th>Емкость</th>
-
-          <th>
+          <th class="text-center">
             <button
               class="btn btn-ghost btn-xs"
               onclick={() => toggleSort("registerNumber")}
             >
-              Рег. номер
+              Рег. №
             </button>
           </th>
 
-          <th>Владелец</th>
-          <th>Гриф</th>
-          <th>Предписание</th>
-          <th>Зоны</th>
+          <th class="text-center">
+            Заключение
+            <br />
+            о СП
+          </th>
+          <th class="text-center">Предписание</th>
+          <th class="text-center">
+            Кому выдан,
+            <br />
+            где используется
+          </th>
+          <th class="text-center">Гриф</th>
+          <th class="text-center">Макс.гриф</th>
+          <th class="text-center">Зоны 2</th>
+          <th class="text-center"></th>
         </tr>
       </thead>
 
       <tbody>
         {#each filteredDevices as usb}
           <tr class:selected-row={selected.has(usb.id)}>
-            <td>
+            <td class="text-center">
               <input
                 checked={selected.has(usb.id)}
                 onchange={() => toggleDevice(usb.id)}
@@ -177,13 +214,16 @@
               />
             </td>
 
-            <td>{usb.manufacturer}</td>
-            <td>{usb.serial}</td>
-            <td>{usb.capacity}</td>
-            <td>{usb.registerNumber ?? "-"}</td>
-            <td>{usb.owner ?? "-"}</td>
+            <td class="text-center">{usb.manufacturer}</td>
+            <td class="text-center">{usb.capacity}</td>
+            <td class="text-center">{usb.serial}</td>
+            <td class="text-center">{usb.assignedNumber}</td>
+            <td class="text-center">{usb.registerNumber ?? "-"}</td>
+            <td class="text-center">{usb.conclusionNumber ?? "-"}</td>
+            <td class="text-center">{usb.prescription ?? "-"}</td>
+            <td class="text-center">{usb.owner ?? "-"}</td>
 
-            <td>
+            <td class="text-center">
               {#if usb.secret}
                 <span class="badge badge-info">
                   {usb.secclass}
@@ -195,9 +235,9 @@
               {/if}
             </td>
 
-            <td>{usb.prescription ?? "-"}</td>
-            <td>{usb.zones ?? "-"}</td>
-            <td>
+            <td class="text-center">{usb.maxsecclass ?? "-"}</td>
+            <td class="text-center">{usb.zones ?? "-"}</td>
+            <td class="text-center">
               <button class="btn btn-sm">
                 <SquarePen />
               </button>

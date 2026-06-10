@@ -33,12 +33,12 @@
         <tr>
           <th>№ п.п.</th>
           <th>Производитель</th>
-          <th>Гриф</th>
-          <th>Ответственный</th>
           <th>Рег №</th>
+          <th>Гриф</th>
           <th>s/n</th>
           <th>Предписание</th>
           <th>Зона 2</th>
+          <th>Ответственный</th>
           <th>СД</th>
           <th>Прочее</th>
         </tr>
@@ -49,20 +49,20 @@
           <tr>
             <td>{index + 1}</td>
             <td>{usb.manufacturer}</td>
+            <td>{usb.registerNumber ?? "-"}</td>
             <td>
               {#if usb.registered && !usb.secret}
                 <div class="tooltip" data-tip="ИНТЕРНЕТ">
-                  <div class="badge badge-sm bg-red-700">И</div>
+                  <div class="badge badge-sm bg-red-700">Интернет</div>
                 </div>
               {:else}
                 {usb.secclass ?? "-"}
               {/if}
             </td>
-            <td>{usb.owner ?? "-"}</td>
-            <td>{usb.registerNumber ?? "-"}</td>
             <td>{usb.serial ?? "-"}</td>
             <td>{usb.prescription ?? "-"}</td>
             <td>{usb.zones ?? "-"}</td>
+            <td>{usb.owner ?? "-"}</td>
             <td>
               {#if usb.registered && usb.special}
                 <div class="tooltip" data-tip="СПЕЦИАЛЬНОЕ ДЕЛОПРОИЗВОДСТВО">
