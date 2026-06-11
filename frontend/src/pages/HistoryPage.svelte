@@ -1,6 +1,18 @@
 <script lang="ts">
-  import { usbDevices } from "../data";
+  import { onMount } from "svelte";
   import UsbDeviceCard from "../components/UsbDeviceCard.svelte";
+  import type { UsbFlashDevice } from "../types";
+
+  let usbDevices = $state<UsbFlashDevice[]>([]);
+  onMount(async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:5151/usb");
+      usbDevices = await response.json();
+      console.log(usbDevices);
+    } catch (error) {
+      console.error("Ошибка загрузки USB устройств:", error);
+    }
+  });
 
   // 1. Создаем реактивное состояние для выбранного устройства
   let selectedDevice = $state<any>(null);

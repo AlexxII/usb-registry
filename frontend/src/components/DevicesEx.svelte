@@ -1,8 +1,19 @@
 <script lang="ts">
-  import { usbDevices } from "../data";
+  import { onMount } from "svelte";
   import type { UsbFlashDevice } from "../types";
   import { SquarePen } from "@lucide/svelte";
   import UsbDeviceForm from "./UsbDeviceForm.svelte";
+
+  let usbDevices = $state([]);
+  onMount(async () => {
+    try {
+      const response = await fetch("http://127.0.0.1:5151/usb");
+      usbDevices = await response.json();
+      console.log(usbDevices)
+    } catch (error) {
+      console.error("Ошибка загрузки USB устройств:", error);
+    }
+  });
 
   let selectedDevice = $state<UsbFlashDevice | undefined>();
 
@@ -33,7 +44,7 @@
     sortDirection = "asc";
   }
 
-  const filteredDevices = $derived.by(() => {
+  const filteredDevices: UsbFlashDevice[] = $derived.by(() => {
     let result = [...usbDevices];
 
     if (search.trim()) {
@@ -205,7 +216,7 @@
           <th class="text-center">
             <button
               class="btn btn-ghost btn-xs"
-              onclick={() => toggleSort("registerNumber")}
+              onclick={() => toggleSort("register_number")}
             >
               Рег. №
             </button>
@@ -244,9 +255,9 @@
             <td class="text-center">{usb.manufacturer}</td>
             <td class="text-center">{usb.capacity}</td>
             <td class="text-center">{usb.serial}</td>
-            <td class="text-center">{usb.assignedNumber}</td>
-            <td class="text-center">{usb.registerNumber ?? "-"}</td>
-            <td class="text-center">{usb.conclusionNumber ?? "-"}</td>
+            <td class="text-center">{usb.assigned_number}</td>
+            <td class="text-center">{usb.register_number ?? "-"}</td>
+            <td class="text-center">{usb.conclusion_number ?? "-"}</td>
             <td class="text-center">{usb.prescription ?? "-"}</td>
             <td class="text-center">{usb.owner ?? "-"}</td>
 

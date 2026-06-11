@@ -12,12 +12,7 @@
           </div>
         </div>
       </div>
-
       <h1 class="text-3xl font-bold">Устройства не подключены</h1>
-
-      <p class="py-4 text-base-content/70">
-        В настоящий момент USB-накопители не обнаружены.
-      </p>
     </div>
   </div>
 </div>
