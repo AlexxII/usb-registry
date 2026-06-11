@@ -1,3 +1,3 @@
 pub mod health;
 pub mod usb;
-pub mod testing;
+pub mod auth;
