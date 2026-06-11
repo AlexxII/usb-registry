@@ -1,5 +1,4 @@
 <script lang="ts">
-  import Devices from "../components/Devices.svelte";
   import DevicesEx from "../components/DevicesEx.svelte";
 </script>
 
