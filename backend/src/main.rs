@@ -1,6 +1,8 @@
 use tokio::net::TcpListener;
 
 mod api;
+mod usb;
+mod models;
 mod server;
 
 const ADDR: &str = "127.0.0.1:5151";
