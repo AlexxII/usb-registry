@@ -43,26 +43,26 @@
     <table class="table table-zebra">
       <thead>
         <tr>
-          <th>№ п.п.</th>
-          <th>Производитель</th>
-          <th>Рег №</th>
-          <th>Гриф</th>
-          <th>s/n</th>
-          <th>Предписание</th>
-          <th>Зона 2</th>
-          <th>Ответственный</th>
-          <th>СД</th>
-          <th>Прочее</th>
+          <th class="text-center">№ п.п.</th>
+          <th class="text-center">Производитель</th>
+          <th class="text-center">Рег №</th>
+          <th class="text-center">Гриф</th>
+          <th class="text-center">s/n</th>
+          <th class="text-center">Предписание</th>
+          <th class="text-center">Зона 2</th>
+          <th class="text-center">Ответственный</th>
+          <th class="text-center">СД</th>
+          <th class="text-center">Прочее</th>
         </tr>
       </thead>
 
       <tbody>
         {#each usbDevices as usb, index}
           <tr>
-            <td>{index + 1}</td>
-            <td>{usb.manufacturer}</td>
-            <td>{usb.registerNumber ?? "-"}</td>
-            <td>
+            <td class="text-center">{index + 1}</td>
+            <td class="text-center">{usb.manufacturer}</td>
+            <td class="text-center">{usb.registerNumber ?? "-"}</td>
+            <td class="text-center">
               {#if usb.registered && !usb.secret}
                 <div class="tooltip" data-tip="ИНТЕРНЕТ">
                   <div class="badge badge-sm bg-red-700">Интернет</div>
@@ -71,11 +71,11 @@
                 {usb.secclass ?? "-"}
               {/if}
             </td>
-            <td>{usb.serial ?? "-"}</td>
-            <td>{usb.prescription ?? "-"}</td>
-            <td>{usb.zones ?? "-"}</td>
-            <td>{usb.owner ?? "-"}</td>
-            <td>
+            <td class="text-center">{usb.serial ?? "-"}</td>
+            <td class="text-center">{usb.prescription ?? "-"}</td>
+            <td class="text-center">{usb.zones ?? "-"}</td>
+            <td class="text-center">{usb.owner ?? "-"}</td>
+            <td class="text-center">
               {#if usb.registered && usb.special}
                 <div class="tooltip" data-tip="СПЕЦИАЛЬНОЕ ДЕЛОПРОИЗВОДСТВО">
                   <div
@@ -87,7 +87,7 @@
                 -
               {/if}
             </td>
-            <td>
+            <td class="text-center">
               <button
                 class="btn btn-ghost btn-xs"
                 onclick={() => openDetails(usb)}>Подробнее</button
