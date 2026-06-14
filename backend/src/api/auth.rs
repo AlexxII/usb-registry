@@ -1,7 +1,9 @@
+use axum::extract::State;
 use axum::http::StatusCode;
 use axum::routing::post;
 use axum::{Json, Router};
 use serde::{Deserialize, Serialize};
+use crate::AppState;
 
 #[derive(Deserialize)]
 struct AuthRequest {
@@ -13,11 +15,11 @@ struct AuthResponse {
     token: String,
 }
 
-pub fn route() -> Router {
+pub fn route() -> Router<AppState> {
     Router::new().route("/auth/admin", post(check_admin))
 }
 
-async fn check_admin(Json(payload): Json<AuthRequest>) -> Result<Json<AuthResponse>, StatusCode> {
+async fn check_admin(State(pool): State<AppState>, Json(payload): Json<AuthRequest>) -> Result<Json<AuthResponse>, StatusCode> {
     if payload.password != "12345" {
         return Err(StatusCode::UNAUTHORIZED);
     }
