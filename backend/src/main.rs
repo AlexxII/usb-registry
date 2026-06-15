@@ -8,6 +8,7 @@ mod api;
 mod models;
 mod server;
 mod usb;
+mod db;
 
 #[derive(Clone)]
 pub struct AppState {

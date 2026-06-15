@@ -1,28 +1,53 @@
 use serde::{Deserialize, Serialize};
+use sqlx::prelude::FromRow;
+
+#[derive(Serialize, Deserialize, FromRow)]
+pub struct Device {
+    pub id: String,
+
+    pub manufacturer: String,
+    pub serial: String,
+    pub capacity: String,
+
+    pub assigned_number: String,
+    pub registered: bool,
+    pub secret: bool,
+    pub special: bool,
+
+    pub secclass: Option<String>,
+    pub max_secclass: Option<String>,
+
+    pub owner: Option<String>,
+
+    pub register_number: Option<String>,
+    pub prescription: Option<String>,
+    pub conclusion_number: Option<String>,
+    pub zones: Option<String>,
+
+    pub destroyed: bool,
+}
 
 #[derive(Serialize, Deserialize)]
-pub struct UsbDevice {
-    id: String,
-    label: String,
-    manufacturer: String,
-    serial: String,
-    assigned_number: String,
-    filesystem: String,
-    capacity: String,
+pub struct CreateDevice {
 
-    registered: bool,
-    secret: bool,
-    special: bool,
+    pub manufacturer: String,
+    pub serial: String,
+    pub capacity: String,
 
-    secclass: Option<String>,
-    maxsecclass: Option<String>,
+    pub assigned_number: String,
+    pub registered: bool,
+    pub secret: bool,
+    pub special: bool,
 
-    owner: Option<String>,
-    register_number: Option<u32>,
-    prescription: Option<u32>,
-    conclusion_number: Option<u32>,
-    zones: Option<String>,
+    pub secclass: Option<String>,
+    pub max_secclass: Option<String>,
 
-    first_seen: String,
-    last_seen: String,
+    pub owner: Option<String>,
+
+    pub register_number: Option<String>,
+    pub prescription: Option<String>,
+    pub conclusion_number: Option<String>,
+    pub zones: Option<String>,
+
+    pub destroyed: bool,
 }
