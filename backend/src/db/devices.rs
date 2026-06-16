@@ -6,6 +6,7 @@ pub async fn get_devices(pool: &SqlitePool) -> Result<Vec<Device>, sqlx::Error> 
     let devices = sqlx::query_as::<_, Device>(
         r#"
             SELECT 
+            id,
             manufacturer,
             serial,
             capacity,

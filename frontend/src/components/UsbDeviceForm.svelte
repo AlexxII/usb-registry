@@ -1,24 +1,5 @@
 <script lang="ts">
-  import type { UsbFlashDevice } from "../types";
-
-  type FormData = {
-    manufacturer: string;
-    serial: string;
-    assignedNumber: string;
-    capacity: string;
-
-    secret: boolean;
-    special: boolean;
-
-    secclass: "С" | "СС" | "ОВ" | "Н/С" | "";
-    maxsecclass: "С" | "СС" | "ОВ" | "Н/С" | "";
-
-    owner: string;
-    registerNumber: string;
-    conclusionNumber: string;
-    prescription: string;
-    zones: string;
-  };
+  import type { UsbFlashDevice, FormData } from "../types";
 
   let {
     device,
@@ -28,25 +9,52 @@
     saveDevice: (payload: FormData & { id?: string }) => void;
   } = $props();
 
-  let form = $state<FormData>({
-    manufacturer: device?.manufacturer ?? "",
-    serial: device?.serial ?? "",
-    assignedNumber: device?.assignedNumber ?? "",
-    capacity: device?.capacity ?? "",
+  function createForm(device?: UsbFlashDevice): FormData {
+    return {
+      manufacturer: device?.manufacturer ?? "",
+      serial: device?.serial ?? "",
+      assigned_number: device?.assigned_number ?? "",
+      capacity: device?.capacity ?? "",
 
-    secret: device?.secret ?? false,
-    special: device?.special ?? false,
+      secret: device?.secret ?? false,
+      special: device?.special ?? false,
 
-    secclass: device?.secclass ?? "",
-    maxsecclass: device?.maxsecclass ?? "",
+      secclass: device?.secclass ?? "",
+      max_secclass: device?.max_secclass ?? "",
 
-    owner: device?.owner ?? "",
-    registerNumber: String(device?.registerNumber ?? ""),
-    conclusionNumber:String(device?.conclusionNumber ?? ""),
-    prescription: String(device?.prescription ?? ""),
-    zones: device?.zones ?? "",
+      owner: device?.owner ?? "",
+      register_number: String(device?.register_number ?? ""),
+      conclusion_number: String(device?.conclusion_number ?? ""),
+      prescription: String(device?.prescription ?? ""),
+      zones: device?.zones ?? "",
+    };
+  }
+
+  let form = $state(createForm());
+
+  $effect(() => {
+    form = createForm(device);
   });
 
+  // let form = $state<FormData>({
+  //   manufacturer: device?.manufacturer ?? "",
+  //   serial: device?.serial ?? "",
+  //   assigned_number: device?.assigned_number ?? "",
+  //   capacity: device?.capacity ?? "",
+  //
+  //   secret: device?.secret ?? false,
+  //   special: device?.special ?? false,
+  //
+  //   secclass: device?.secclass ?? "",
+  //   max_secclass: device?.max_secclass ?? "",
+  //
+  //   owner: device?.owner ?? "",
+  //   register_number: String(device?.register_number ?? ""),
+  //   conclusion_number: String(device?.conclusion_number ?? ""),
+  //   prescription: String(device?.prescription ?? ""),
+  //   zones: device?.zones ?? "",
+  // });
+  //
   const isEdit = $derived(device !== undefined);
 
   function submit() {
@@ -113,7 +121,7 @@
           <span class="label-text"> Рег. № (по журналу МНИ) </span>
         </div>
 
-        <input bind:value={form.registerNumber} class="input" />
+        <input bind:value={form.register_number} class="input" />
       </label>
     </div>
   </div>
@@ -137,7 +145,7 @@
             <span class="label-text"> Зав. № / присвоенный при СП </span>
           </div>
 
-          <input bind:value={form.assignedNumber} class="input" />
+          <input bind:value={form.assigned_number} class="input" />
         </label>
 
         <label class="form-control">
@@ -153,7 +161,7 @@
             <span class="label-text"> Заключение о СП (Рег. №) </span>
           </div>
 
-          <input bind:value={form.conclusionNumber} class="input" />
+          <input bind:value={form.conclusion_number} class="input" />
         </label>
 
         <label class="form-control">
@@ -183,7 +191,7 @@
             <span class="label-text"> Максимальный гриф </span>
           </div>
 
-          <select bind:value={form.maxsecclass} class="select select-bordered">
+          <select bind:value={form.max_secclass} class="select select-bordered">
             <option value="">Не указан</option>
             <option value="С">С</option>
             <option value="СС">СС</option>

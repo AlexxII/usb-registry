@@ -3,7 +3,7 @@ use sqlx::prelude::FromRow;
 
 #[derive(Serialize, Deserialize, FromRow)]
 pub struct Device {
-    pub id: String,
+    pub id: i64,
 
     pub manufacturer: String,
     pub serial: String,
@@ -27,9 +27,8 @@ pub struct Device {
     pub destroyed: bool,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct CreateDevice {
-
     pub manufacturer: String,
     pub serial: String,
     pub capacity: String,

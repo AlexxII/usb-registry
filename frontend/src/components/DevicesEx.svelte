@@ -5,26 +5,23 @@
   import UsbDeviceForm from "./UsbDeviceForm.svelte";
 
   let usbDevices = $state([]);
+  let createCounter = $state(0);
+
   onMount(async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5151/usb");
+      const response = await fetch("http://127.0.0.1:5151/usb/devices");
       usbDevices = await response.json();
-      console.log(usbDevices)
     } catch (error) {
       console.error("Ошибка загрузки USB устройств:", error);
     }
   });
 
   let selectedDevice = $state<UsbFlashDevice | undefined>();
-
   let search = $state("");
-
   let onlyRegistered = $state(false);
   let onlySecret = $state(false);
   let onlyInternet = $state(false);
-
   let selected = $state<Set<string>>(new Set());
-
   let sortField = $state<keyof UsbFlashDevice>("manufacturer");
   let sortDirection = $state<"asc" | "desc">("asc");
 
@@ -99,6 +96,8 @@
   }
 
   function addNewDevice() {
+    selectedDevice = undefined;
+    createCounter++;
     modalRef?.showModal();
   }
 
@@ -121,8 +120,48 @@
     modalRef?.showModal();
   }
 
-  function saveDevice(payload: UsbFlashDevice) {
-    console.log(payload);
+  function prepareData(data: UsbFlashDevice) {
+    let { id, ...payload } = data;
+    if (!payload.secret) {
+      payload = {
+        ...payload,
+        secclass: null,
+        max_secclass: null,
+        special: false,
+        assigned_number: "",
+        conclusion_number: null,
+        prescription: null,
+        zones: null,
+      };
+    }
+    return {
+      ...payload,
+      registered: true,
+      destroyed: false,
+    };
+  }
+
+  async function saveDevice(payload: UsbFlashDevice) {
+    const URL = "http://127.0.0.1:5151/usb/devices";
+    const data = prepareData(payload);
+    console.log(data);
+    try {
+      const response = await fetch(URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json;charset=utf-8",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Ошибка HTTP: ${response.status}`);
+      }
+      const result = await response.json();
+      console.log("Успех:", result);
+    } catch (error) {
+      console.log("Ошибка сохранения USB устройства", error);
+    }
   }
 </script>
 
@@ -130,7 +169,7 @@
 
 <dialog bind:this={modalRef} class="modal">
   <div class="modal-box max-w-2xl">
-    {#key selectedDevice?.id ?? "new"}
+    {#key selectedDevice?.id ?? `new-${createCounter}`}
       <UsbDeviceForm device={selectedDevice} {saveDevice} />
     {/key}
   </div>
@@ -273,7 +312,7 @@
               {/if}
             </td>
 
-            <td class="text-center">{usb.maxsecclass ?? "-"}</td>
+            <td class="text-center">{usb.max_secclass ?? "-"}</td>
             <td class="text-center">{usb.zones ?? "-"}</td>
             <td class="text-center">
               <button class="btn btn-sm" onclick={() => editDevice(usb)}>
