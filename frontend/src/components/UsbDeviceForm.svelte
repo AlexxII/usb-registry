@@ -32,25 +32,12 @@
 
   let form = $state(createForm());
 
-  // let form = $state<FormData>({
-  //   manufacturer: device?.manufacturer ?? "",
-  //   serial: device?.serial ?? "",
-  //   assigned_number: device?.assigned_number ?? "",
-  //   capacity: device?.capacity ?? "",
-  //
-  //   secret: device?.secret ?? false,
-  //   special: device?.special ?? false,
-  //
-  //   secclass: device?.secclass ?? "",
-  //   max_secclass: device?.max_secclass ?? "",
-  //
-  //   owner: device?.owner ?? "",
-  //   register_number: String(device?.register_number ?? ""),
-  //   conclusion_number: String(device?.conclusion_number ?? ""),
-  //   prescription: String(device?.prescription ?? ""),
-  //   zones: device?.zones ?? "",
-  // });
-  //
+  $effect(() => {
+    if (device) {
+      Object.assign(form, createForm(device));
+    }
+  });
+
   const isEdit = $derived(device !== undefined);
 
   function submit() {

@@ -3,20 +3,16 @@
   import type { UsbFlashDevice } from "../types";
   import { SquarePen } from "@lucide/svelte";
   import UsbDeviceForm from "./UsbDeviceForm.svelte";
+  import { getDevices } from "../api/devices";
 
-  let usbDevices = $state([]);
+  let usbDevices = $state<UsbFlashDevice[]>([]);
   let createCounter = $state(0);
 
   onMount(async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:5151/usb/devices");
-      usbDevices = await response.json();
-    } catch (error) {
-      console.error("Ошибка загрузки USB устройств:", error);
-    }
+    usbDevices = await getDevices();
   });
 
-  let selectedDevice = $state<UsbFlashDevice | undefined>();
+  let editedDevice = $state<UsbFlashDevice | undefined>();
   let search = $state("");
   let onlyRegistered = $state(false);
   let onlySecret = $state(false);
@@ -96,7 +92,7 @@
   }
 
   function addNewDevice() {
-    selectedDevice = undefined;
+    editedDevice = undefined;
     createCounter++;
     modalRef?.showModal();
   }
@@ -116,7 +112,7 @@
 
   function editDevice(device: UsbFlashDevice) {
     console.log(device);
-    selectedDevice = device;
+    editedDevice = device;
     modalRef?.showModal();
   }
 
@@ -169,8 +165,8 @@
 
 <dialog bind:this={modalRef} class="modal">
   <div class="modal-box max-w-2xl">
-    {#key selectedDevice?.id ?? `new-${createCounter}`}
-      <UsbDeviceForm device={selectedDevice} {saveDevice} />
+    {#key editedDevice?.id ?? `new-${createCounter}`}
+      <UsbDeviceForm device={editedDevice} {saveDevice} />
     {/key}
   </div>
   <form method="dialog" class="modal-backdrop">
