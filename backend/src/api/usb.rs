@@ -5,7 +5,7 @@ use crate::db::devices::{get_devices, insert_device};
 use crate::models::device::{CreateDevice, Device};
 
 use axum::extract::State;
-use axum::http::{StatusCode, response};
+use axum::http::StatusCode;
 use axum::routing::{delete, get, post, put};
 use axum::{Json, Router};
 
@@ -47,4 +47,5 @@ async fn delete_devices(State(state): State<AppState>, Json(ids): Json<Vec<i64>>
 async fn import_devices(State(state): State<AppState>, Json(ids): Json<Vec<CreateDevice>>) {}
 
 async fn update_device(State(state): State<AppState>, Json(id): Json<i64>) {}
+
 async fn delete_device(State(state): State<AppState>, Json(id): Json<i64>) {}

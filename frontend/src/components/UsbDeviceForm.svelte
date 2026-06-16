@@ -32,10 +32,6 @@
 
   let form = $state(createForm());
 
-  $effect(() => {
-    form = createForm(device);
-  });
-
   // let form = $state<FormData>({
   //   manufacturer: device?.manufacturer ?? "",
   //   serial: device?.serial ?? "",

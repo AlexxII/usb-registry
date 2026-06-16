@@ -50,6 +50,7 @@
     const data = await response.json();
     sessionStorage.setItem("admin-token", data.token);
     passwordModal?.close();
+    password = "";
     updatePath();
     goto("/device-manage");
   }
