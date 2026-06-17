@@ -4,7 +4,7 @@
   import DeviceManageTable from "../components/DeviceManageTable.svelte";
   import DeviceManageToolbar from "../components/DeviceManageToolbar.svelte";
   import UsbDeviceForm from "../components/UsbDeviceForm.svelte";
-  import { createDevice, getDevices } from "../api/devices";
+  import { createDevice, getDevices, updateDevice } from "../api/devices";
   import type { UsbFlashDevice } from "../types";
 
   let usbDevices = $state<UsbFlashDevice[]>([]);
@@ -144,10 +144,24 @@
     };
   }
 
-  async function saveDevice(payload: UsbFlashDevice) {
+  async function newDevice(payload: any) {
     let data = prepareData(payload);
     let response = await createDevice(data);
     console.log(response);
+  }
+
+  async function update(id: any, payload: any) {
+    let response = await updateDevice(id, payload);
+    console.log(response);
+  }
+
+  async function saveDevice(payload: UsbFlashDevice) {
+    const data = prepareData(payload);
+    if (payload.id) {
+      await update(payload.id, data);
+    } else {
+      await newDevice(data);
+    }
   }
 </script>
 

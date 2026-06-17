@@ -2,9 +2,10 @@ use std::fs;
 
 use crate::AppState;
 use crate::db::devices::{get_devices, insert_device};
+use crate::errors::AppResult;
 use crate::models::device::{CreateDevice, Device};
 
-use axum::extract::State;
+use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use axum::routing::{delete, get, post, put};
 use axum::{Json, Router};
@@ -25,27 +26,31 @@ pub fn router() -> Router<AppState> {
 //     Json(devices)
 // }
 
-async fn list_devices(State(state): State<AppState>) -> Result<Json<Vec<Device>>, StatusCode> {
-    let device = get_devices(&state.pool).await.map_err(|e| {
-        eprintln!("Database error: {e}");
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+async fn list_devices(State(state): State<AppState>) -> AppResult<Json<Vec<Device>>> {
+    let device = get_devices(&state.pool).await?;
     Ok(Json(device))
 }
 
 async fn create_device(
     State(state): State<AppState>,
     Json(device): Json<CreateDevice>,
-) -> Result<&'static str, StatusCode> {
-    let resp = insert_device(&state.pool, &device).await;
-    println!("{:?}", resp);
-    Ok("Ok")
+) -> AppResult<StatusCode> {
+    insert_device(&state.pool, &device).await?;
+    Ok(StatusCode::CREATED)
 }
+
+async fn update_device(
+    Path(id): Path<i64>,
+    State(state): State<AppState>,
+    Json(device): Json<Device>,
+) -> AppResult<StatusCode> {
+    println!("{:?}", device);
+    println!("{:?}", id);
+    Ok(StatusCode::OK)
+}
+
+async fn delete_device(State(state): State<AppState>, Json(id): Json<i64>) {}
 
 async fn delete_devices(State(state): State<AppState>, Json(ids): Json<Vec<i64>>) {}
 
 async fn import_devices(State(state): State<AppState>, Json(ids): Json<Vec<CreateDevice>>) {}
-
-async fn update_device(State(state): State<AppState>, Json(id): Json<i64>) {}
-
-async fn delete_device(State(state): State<AppState>, Json(id): Json<i64>) {}
