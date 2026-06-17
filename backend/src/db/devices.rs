@@ -1,4 +1,4 @@
-use crate::models::device::{CreateDevice, Device};
+use crate::models::device::{Device, DeviceUpload};
 use sqlx::SqlitePool;
 
 #[allow(dead_code)]
@@ -94,7 +94,7 @@ pub async fn get_device_by_serial(
 }
 
 #[allow(dead_code)]
-pub async fn insert_device(pool: &SqlitePool, device: &CreateDevice) -> Result<u64, sqlx::Error> {
+pub async fn insert_device(pool: &SqlitePool, device: &DeviceUpload) -> Result<u64, sqlx::Error> {
     let result = sqlx::query(
         r#"
         INSERT INTO devices (
@@ -141,7 +141,7 @@ pub async fn insert_device(pool: &SqlitePool, device: &CreateDevice) -> Result<u
 #[allow(dead_code)]
 pub async fn insert_devices(
     pool: &SqlitePool,
-    devices: &[CreateDevice],
+    devices: &[DeviceUpload],
 ) -> Result<u64, sqlx::Error> {
     let mut tx = pool.begin().await?;
     let mut affected = 0;
@@ -194,7 +194,54 @@ pub async fn insert_devices(
 }
 
 #[allow(dead_code)]
-pub async fn update_device() {}
+pub async fn update_device(
+    pool: &SqlitePool,
+    id: i64,
+    device: &DeviceUpload,
+) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query(
+        r#"
+        UPDATE devices
+        SET
+            manufacturer = ?,
+            serial = ?,
+            capacity = ?,
+            assigned_number = ?,
+            registered = ?,
+            secret = ?,
+            special = ?,
+            secclass = ?,
+            max_secclass = ?,
+            owner = ?,
+            register_number = ?,
+            conclusion_number = ?,
+            prescription = ?,
+            zones = ?,
+            destroyed = ?
+        WHERE id = ?
+        "#,
+    )
+    .bind(&device.manufacturer)
+    .bind(&device.serial)
+    .bind(&device.capacity)
+    .bind(&device.assigned_number)
+    .bind(&device.registered)
+    .bind(&device.secret)
+    .bind(&device.special)
+    .bind(&device.secclass)
+    .bind(&device.max_secclass)
+    .bind(&device.owner)
+    .bind(&device.register_number)
+    .bind(&device.conclusion_number)
+    .bind(&device.prescription)
+    .bind(&device.zones)
+    .bind(&device.destroyed)
+    .bind(id)
+    .execute(pool)
+    .await?;
+
+    Ok(result.rows_affected())
+}
 
 #[allow(dead_code)]
 pub async fn delete_device(pool: &SqlitePool, id: i64) -> Result<u64, sqlx::Error> {

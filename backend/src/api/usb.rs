@@ -1,9 +1,7 @@
-use std::fs;
-
 use crate::AppState;
-use crate::db::devices::{get_devices, insert_device};
+use crate::db::devices::{get_devices, insert_device, update_device};
 use crate::errors::AppResult;
-use crate::models::device::{CreateDevice, Device};
+use crate::models::device::{DeviceUpload, Device};
 
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
@@ -16,7 +14,7 @@ pub fn router() -> Router<AppState> {
         .route("/usb/devices", post(create_device))
         .route("/usb/devices", delete(delete_devices))
         .route("/usb/devices/import", post(import_devices))
-        .route("/usb/devices/{id}", put(update_device))
+        .route("/usb/devices/{id}", put(update))
         .route("/usb/devices/{id}", delete(delete_device))
 }
 
@@ -33,19 +31,18 @@ async fn list_devices(State(state): State<AppState>) -> AppResult<Json<Vec<Devic
 
 async fn create_device(
     State(state): State<AppState>,
-    Json(device): Json<CreateDevice>,
+    Json(device): Json<DeviceUpload>,
 ) -> AppResult<StatusCode> {
     insert_device(&state.pool, &device).await?;
     Ok(StatusCode::CREATED)
 }
 
-async fn update_device(
+async fn update(
     Path(id): Path<i64>,
     State(state): State<AppState>,
-    Json(device): Json<Device>,
+    Json(device): Json<DeviceUpload>,
 ) -> AppResult<StatusCode> {
-    println!("{:?}", device);
-    println!("{:?}", id);
+    update_device(&state.pool, id, &device).await?;
     Ok(StatusCode::OK)
 }
 
@@ -53,4 +50,4 @@ async fn delete_device(State(state): State<AppState>, Json(id): Json<i64>) {}
 
 async fn delete_devices(State(state): State<AppState>, Json(ids): Json<Vec<i64>>) {}
 
-async fn import_devices(State(state): State<AppState>, Json(ids): Json<Vec<CreateDevice>>) {}
+async fn import_devices(State(state): State<AppState>, Json(ids): Json<Vec<DeviceUpload>>) {}

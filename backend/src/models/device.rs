@@ -28,7 +28,7 @@ pub struct Device {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct CreateDevice {
+pub struct DeviceUpload {
     pub manufacturer: String,
     pub serial: String,
     pub capacity: String,
