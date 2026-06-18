@@ -26,6 +26,10 @@
     usbDevices = await getDevices();
   });
 
+  async function reloadDevices() {
+    usbDevices = await getDevices();
+  }
+
   function handleKeyDown(event: KeyboardEvent) {
     if (event.key === "Escape") {
       selected = new Set();
@@ -145,14 +149,24 @@
   }
 
   async function newDevice(payload: any) {
-    let data = prepareData(payload);
-    let response = await createDevice(data);
-    console.log(response);
+    try {
+      let data = prepareData(payload);
+      await createDevice(data);
+      modalRef?.close();
+      await reloadDevices();
+    } catch (error) {
+      alert("Не удалось сохранить устройство");
+    }
   }
 
   async function update(id: any, payload: any) {
-    let response = await updateDevice(id, payload);
-    console.log(response);
+    try {
+      await updateDevice(id, payload);
+      modalRef?.close();
+      await reloadDevices();
+    } catch (error) {
+      alert("Не удалось обновить устройство");
+    }
   }
 
   async function saveDevice(payload: UsbFlashDevice) {
@@ -163,11 +177,15 @@
       await newDevice(data);
     }
   }
+
+  function handleDialogClose() {
+    editedDevice = undefined;
+  }
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<dialog bind:this={modalRef} class="modal">
+<dialog bind:this={modalRef} class="modal" onclose={handleDialogClose}>
   <div class="modal-box max-w-2xl">
     {#key editedDevice?.id ?? `new-${createCounter}`}
       <UsbDeviceForm device={editedDevice} {saveDevice} />

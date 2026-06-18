@@ -27,7 +27,7 @@ export async function createDevice(device: any) {
     throw new Error(`HTTP ${response.status}`);
   }
 
-  return response.json();
+  return true;
 }
 
 export async function updateDevice(id: number, device: any) {
@@ -42,5 +42,5 @@ export async function updateDevice(id: number, device: any) {
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`);
   }
-  return response.json();
+  return true;
 }

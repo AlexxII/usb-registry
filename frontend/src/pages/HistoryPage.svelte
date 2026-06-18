@@ -61,7 +61,7 @@
           <tr>
             <td class="text-center">{index + 1}</td>
             <td class="text-center">{usb.manufacturer}</td>
-            <td class="text-center">{usb.registerNumber ?? "-"}</td>
+            <td class="text-center">{usb.register_number ?? "-"}</td>
             <td class="text-center">
               {#if usb.registered && !usb.secret}
                 <div class="tooltip" data-tip="ИНТЕРНЕТ">
