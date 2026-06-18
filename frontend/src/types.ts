@@ -1,5 +1,5 @@
 export type UsbFlashDevice = {
-  id: string;
+  id: number;
   label: string;
   manufacturer: string;
   serial: string;

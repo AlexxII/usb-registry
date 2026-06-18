@@ -44,3 +44,17 @@ export async function updateDevice(id: number, device: any) {
   }
   return true;
 }
+
+export async function destroyDevice(id: number) {
+  const response = await fetch(`${URL}/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return true;
+}

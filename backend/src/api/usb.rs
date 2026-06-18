@@ -1,7 +1,8 @@
 use crate::AppState;
-use crate::db::devices::{get_devices, insert_device, update_device};
+use crate::db::devices::{get_devices, insert_device, set_destroyed, update_device};
 use crate::errors::AppResult;
-use crate::models::device::{DeviceUpload, Device};
+use crate::models::device::{Device, DeviceUpload};
+use std::fs;
 
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
@@ -16,13 +17,15 @@ pub fn router() -> Router<AppState> {
         .route("/usb/devices/import", post(import_devices))
         .route("/usb/devices/{id}", put(update))
         .route("/usb/devices/{id}", delete(delete_device))
+        .route("/usb/devices/{id}/destroy", post(mark_destroyed))
 }
 
-// async fn list_devices(State(state): State<AppState>) -> Json<Vec<Device>> {
-//     let content = fs::read_to_string("src/devices.json").expect("read");
-//     let devices: Vec<Device> = serde_json::from_str(&content).expect("read");
-//     Json(devices)
-// }
+#[allow(dead_code)]
+async fn list_devices_from_file(State(_): State<AppState>) -> Json<Vec<Device>> {
+    let content = fs::read_to_string("src/devices.json").expect("read");
+    let devices: Vec<Device> = serde_json::from_str(&content).expect("read");
+    Json(devices)
+}
 
 async fn list_devices(State(state): State<AppState>) -> AppResult<Json<Vec<Device>>> {
     let device = get_devices(&state.pool).await?;
@@ -43,6 +46,14 @@ async fn update(
     Json(device): Json<DeviceUpload>,
 ) -> AppResult<StatusCode> {
     update_device(&state.pool, id, &device).await?;
+    Ok(StatusCode::OK)
+}
+
+async fn mark_destroyed(
+    Path(id): Path<i64>,
+    State(state): State<AppState>,
+) -> AppResult<StatusCode> {
+    set_destroyed(&state.pool, id, true).await?;
     Ok(StatusCode::OK)
 }
 

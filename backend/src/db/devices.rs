@@ -267,3 +267,19 @@ pub async fn delete_devices(pool: &SqlitePool, ids: Vec<i64>) -> Result<u64, sql
     tx.commit().await?; // транзакция
     Ok(affected)
 }
+
+pub async fn set_destroyed(
+    pool: &SqlitePool,
+    id: i64,
+    destroyed: bool,
+) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query(
+        "UPDATE devices SET destroyed = ? WHERE id = ?"
+    )
+    .bind(destroyed)
+    .bind(id)
+    .execute(pool)
+    .await?;
+
+    Ok(result.rows_affected())
+}

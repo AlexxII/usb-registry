@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SquarePen } from "@lucide/svelte";
+  import { SquarePen, Trash2, CircleX } from "@lucide/svelte";
   import type { UsbFlashDevice } from "../types";
 
   let {
@@ -12,22 +12,25 @@
 
     toggleSort,
     editDevice,
+    destroy,
+    deleteDevice,
   }: {
     devices: UsbFlashDevice[];
-    selected: Set<string>;
+    selected: Set<number>;
     allSelected: boolean;
 
     toggleAll: () => void;
-    toggleDevice: (id: string) => void;
+    toggleDevice: (id: number) => void;
 
     toggleSort: (field: keyof UsbFlashDevice) => void;
     editDevice: (device: UsbFlashDevice) => void;
+    destroy: (id: number) => void;
+    deleteDevice: (id: number) => void;
   } = $props();
 </script>
 
 <div class="space-y-4">
   <!-- filters -->
-
 
   <!-- table -->
 
@@ -119,10 +122,25 @@
 
             <td class="text-center">{usb.max_secclass ?? "-"}</td>
             <td class="text-center">{usb.zones ?? "-"}</td>
-            <td class="text-center">
-              <button class="btn btn-sm" onclick={() => editDevice(usb)}>
-                <SquarePen />
-              </button>
+            <td class="text-center flex gap-1">
+              <div class="tooltip tooltip-left" data-tip="Изменить">
+                <SquarePen
+                  class="cursor-pointer"
+                  onclick={() => editDevice(usb)}
+                />
+              </div>
+              <div class="tooltip tooltip-left" data-tip="Пометить как уничтоженное">
+                <Trash2
+                  class="cursor-pointer"
+                  onclick={() => destroy(usb.id)}
+                />
+              </div>
+              <div class="tooltip tooltip-left" data-tip="Удалить из базы">
+                <CircleX
+                  class="cursor-pointer"
+                  onclick={() => deleteDevice(usb.id)}
+                />
+              </div>
             </td>
           </tr>
         {/each}

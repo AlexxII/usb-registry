@@ -4,7 +4,12 @@
   import DeviceManageTable from "../components/DeviceManageTable.svelte";
   import DeviceManageToolbar from "../components/DeviceManageToolbar.svelte";
   import UsbDeviceForm from "../components/UsbDeviceForm.svelte";
-  import { createDevice, getDevices, updateDevice } from "../api/devices";
+  import {
+    createDevice,
+    destroyDevice,
+    getDevices,
+    updateDevice,
+  } from "../api/devices";
   import type { UsbFlashDevice } from "../types";
 
   let usbDevices = $state<UsbFlashDevice[]>([]);
@@ -16,11 +21,12 @@
   let onlySecret = $state(false);
   let onlyInternet = $state(false);
 
-  let selected = $state<Set<string>>(new Set());
+  let selected = $state<Set<number>>(new Set());
 
   let sortField = $state<keyof UsbFlashDevice>("manufacturer");
   let sortDirection = $state<"asc" | "desc">("asc");
   let modalRef = $state<HTMLDialogElement | null>(null);
+  let confirmModalRef = $state<HTMLDialogElement | null>(null);
 
   onMount(async () => {
     usbDevices = await getDevices();
@@ -102,7 +108,7 @@
     selected = new Set(filteredDevices.map((d) => d.id));
   }
 
-  function toggleDevice(id: string) {
+  function toggleDevice(id: number) {
     const next = new Set(selected);
 
     if (next.has(id)) {
@@ -169,7 +175,7 @@
     }
   }
 
-  async function saveDevice(payload: UsbFlashDevice) {
+  async function save(payload: UsbFlashDevice) {
     const data = prepareData(payload);
     if (payload.id) {
       await update(payload.id, data);
@@ -178,17 +184,49 @@
     }
   }
 
+  async function destroy(id: number) {
+    try {
+      await destroyDevice(id);
+      // modalRef?.close();
+      await reloadDevices();
+    } catch (error) {
+      alert("Не удалось удалить устройство");
+    }
+  }
+
+  async function deleteDevice(id: number) {
+    confirmModalRef?.showModal();
+  }
+
   function handleDialogClose() {
     editedDevice = undefined;
+  }
+
+  function delettte() {
+    console.log("");
   }
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
 
+<dialog bind:this={confirmModalRef} class="modal">
+  <div class="modal-box">
+    <p class="py-4">Удалить устройство?</p>
+    <div class="modal-action">
+      <form method="dialog">
+        <button class="btn btn-soft btn-info">Отмена</button>
+        <button class="btn btn-soft btn-warning" onclick={delettte}
+          >Удалить</button
+        >
+      </form>
+    </div>
+  </div>
+</dialog>
+
 <dialog bind:this={modalRef} class="modal" onclose={handleDialogClose}>
   <div class="modal-box max-w-2xl">
     {#key editedDevice?.id ?? `new-${createCounter}`}
-      <UsbDeviceForm device={editedDevice} {saveDevice} />
+      <UsbDeviceForm device={editedDevice} {save} />
     {/key}
   </div>
 
@@ -216,6 +254,8 @@
       {toggleDevice}
       {toggleSort}
       {editDevice}
+      {destroy}
+      {deleteDevice}
     />
   </AdminGuard>
 </div>

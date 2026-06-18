@@ -3,10 +3,10 @@
 
   let {
     device,
-    saveDevice,
+    save,
   }: {
     device?: UsbFlashDevice;
-    saveDevice: (payload: FormData & { id?: string }) => void;
+    save: (payload: FormData & { id?: string }) => void;
   } = $props();
 
   function createForm(device?: UsbFlashDevice): FormData {
@@ -41,7 +41,7 @@
   const isEdit = $derived(device !== undefined);
 
   function submit() {
-    saveDevice({
+    save({
       id: device?.id,
       ...form,
     });
