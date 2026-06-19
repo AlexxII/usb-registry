@@ -25,6 +25,7 @@ pub struct Device {
     pub zones: Option<String>,
 
     pub destroyed: bool,
+    pub deleted: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -49,4 +50,5 @@ pub struct DeviceUpload {
     pub zones: Option<String>,
 
     pub destroyed: bool,
+    pub deleted: bool,
 }

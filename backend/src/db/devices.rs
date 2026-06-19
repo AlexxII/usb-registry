@@ -21,7 +21,38 @@ pub async fn get_devices(pool: &SqlitePool) -> Result<Vec<Device>, sqlx::Error> 
             conclusion_number,
             prescription,
             zones,
-            destroyed
+            destroyed,
+            deleted
+        FROM devices
+        WHERE deleted=FALSE
+        "#,
+    )
+    .fetch_all(pool)
+    .await?;
+    Ok(devices)
+}
+
+pub async fn get_all_devices(pool: &SqlitePool) -> Result<Vec<Device>, sqlx::Error> {
+    let devices = sqlx::query_as::<_, Device>(
+        r#"
+            SELECT 
+            id,
+            manufacturer,
+            serial,
+            capacity,
+            assigned_number,
+            registered,
+            secret,
+            special,
+            secclass,
+            max_secclass,
+            owner,
+            register_number,
+            conclusion_number,
+            prescription,
+            zones,
+            destroyed,
+            deleted
         FROM devices
         "#,
     )
@@ -49,9 +80,11 @@ pub async fn get_device_by_id(pool: &SqlitePool, id: i64) -> Result<Option<Devic
             conclusion_number,
             prescription,
             zones,
-            destroyed
+            destroyed,
+            deleted
         FROM devices
-        WHERE id = ?
+        WHERE id = ? 
+        AND deleted = FALSE
         "#,
     )
     .bind(id)
@@ -82,9 +115,11 @@ pub async fn get_device_by_serial(
             conclusion_number,
             prescription,
             zones,
-            destroyed
+            destroyed,
+            deleted
         FROM devices
         WHERE serial = ?
+        AND deleted = FALSE
         "#,
     )
     .bind(serial)
@@ -112,9 +147,10 @@ pub async fn insert_device(pool: &SqlitePool, device: &DeviceUpload) -> Result<u
             conclusion_number,
             prescription,
             zones,
-            destroyed
+            destroyed,
+            deleted
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         "#,
     )
     .bind(&device.manufacturer)
@@ -132,6 +168,7 @@ pub async fn insert_device(pool: &SqlitePool, device: &DeviceUpload) -> Result<u
     .bind(&device.prescription)
     .bind(&device.zones)
     .bind(&device.destroyed)
+    .bind(&device.deleted)
     .execute(pool)
     .await?;
 
@@ -164,9 +201,10 @@ pub async fn insert_devices(
                 conclusion_number,
                 prescription,
                 zones,
-                destroyed
+                destroyed,
+                deleted
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             "#,
         )
         .bind(&device.manufacturer)
@@ -184,6 +222,7 @@ pub async fn insert_devices(
         .bind(&device.prescription)
         .bind(&device.zones)
         .bind(device.destroyed)
+        .bind(device.deleted)
         .execute(&mut *tx)
         .await?;
 
@@ -217,7 +256,8 @@ pub async fn update_device(
             conclusion_number = ?,
             prescription = ?,
             zones = ?,
-            destroyed = ?
+            destroyed = ?,
+            deleted = ?
         WHERE id = ?
         "#,
     )
@@ -236,6 +276,7 @@ pub async fn update_device(
     .bind(&device.prescription)
     .bind(&device.zones)
     .bind(&device.destroyed)
+    .bind(&device.deleted)
     .bind(id)
     .execute(pool)
     .await?;
@@ -244,8 +285,9 @@ pub async fn update_device(
 }
 
 #[allow(dead_code)]
-pub async fn delete_device(pool: &SqlitePool, id: i64) -> Result<u64, sqlx::Error> {
-    let result = sqlx::query("DELETE FROM devices WHERE id = ?")
+pub async fn delete_device(pool: &SqlitePool, id: i64, deleted: bool) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query("UPDATE devices SET deleted = ? WHERE id = ?")
+        .bind(deleted)
         .bind(id)
         .execute(pool)
         .await?;
@@ -273,13 +315,11 @@ pub async fn set_destroyed(
     id: i64,
     destroyed: bool,
 ) -> Result<u64, sqlx::Error> {
-    let result = sqlx::query(
-        "UPDATE devices SET destroyed = ? WHERE id = ?"
-    )
-    .bind(destroyed)
-    .bind(id)
-    .execute(pool)
-    .await?;
+    let result = sqlx::query("UPDATE devices SET destroyed = ? WHERE id = ?")
+        .bind(destroyed)
+        .bind(id)
+        .execute(pool)
+        .await?;
 
     Ok(result.rows_affected())
 }
