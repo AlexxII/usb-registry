@@ -7,6 +7,7 @@
   import {
     createDevice,
     destroyDevice,
+    getAllDevices,
     getDevices,
     removeDevice,
     updateDevice,
@@ -31,11 +32,11 @@
   let deletedId = $state<number | null>(null);
 
   onMount(async () => {
-    usbDevices = await getDevices();
+    usbDevices = await getAllDevices();
   });
 
   async function reloadDevices() {
-    usbDevices = await getDevices();
+    usbDevices = await getAllDevices();
   }
 
   function handleKeyDown(event: KeyboardEvent) {
@@ -169,6 +170,7 @@
 
   async function update(id: any, payload: any) {
     try {
+      console.log(payload);
       await updateDevice(id, payload);
       modalRef?.close();
       await reloadDevices();
@@ -189,16 +191,10 @@
   async function destroy(id: number) {
     try {
       await destroyDevice(id);
-      // modalRef?.close();
       await reloadDevices();
     } catch (error) {
       alert("Не удалось пометить как уничтоженное");
     }
-  }
-
-  async function deleteDevice(id: number) {
-    deletedId = id;
-    confirmModalRef?.showModal();
   }
 
   function handleDialogClose() {
@@ -206,14 +202,18 @@
     deletedId = null;
   }
 
+  async function deleteDevice(id: number) {
+    deletedId = id;
+    confirmModalRef?.showModal();
+  }
+
   async function delette() {
     if (deletedId === null) return;
-    console.log("");
     try {
-      await removeDevice(deletedId);
+      await removeDevice(deletedId, true);
       await reloadDevices();
     } catch (error) {
-      alert("Не удалось удалить")
+      alert("Не удалось удалить");
     }
   }
 </script>
