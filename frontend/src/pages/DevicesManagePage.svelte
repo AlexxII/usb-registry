@@ -8,6 +8,7 @@
     createDevice,
     destroyDevice,
     getDevices,
+    removeDevice,
     updateDevice,
   } from "../api/devices";
   import type { UsbFlashDevice } from "../types";
@@ -27,6 +28,7 @@
   let sortDirection = $state<"asc" | "desc">("asc");
   let modalRef = $state<HTMLDialogElement | null>(null);
   let confirmModalRef = $state<HTMLDialogElement | null>(null);
+  let deletedId = $state<number | null>(null);
 
   onMount(async () => {
     usbDevices = await getDevices();
@@ -190,32 +192,41 @@
       // modalRef?.close();
       await reloadDevices();
     } catch (error) {
-      alert("Не удалось удалить устройство");
+      alert("Не удалось пометить как уничтоженное");
     }
   }
 
   async function deleteDevice(id: number) {
+    deletedId = id;
     confirmModalRef?.showModal();
   }
 
   function handleDialogClose() {
     editedDevice = undefined;
+    deletedId = null;
   }
 
-  function delettte() {
+  async function delette() {
+    if (deletedId === null) return;
     console.log("");
+    try {
+      await removeDevice(deletedId);
+      await reloadDevices();
+    } catch (error) {
+      alert("Не удалось удалить")
+    }
   }
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<dialog bind:this={confirmModalRef} class="modal">
+<dialog bind:this={confirmModalRef} class="modal" onclose={handleDialogClose}>
   <div class="modal-box">
-    <p class="py-4">Удалить устройство?</p>
+    <p class="py-4">Удалить устройство из базы?</p>
     <div class="modal-action">
       <form method="dialog">
         <button class="btn btn-soft btn-info">Отмена</button>
-        <button class="btn btn-soft btn-warning" onclick={delettte}
+        <button class="btn btn-soft btn-warning" onclick={delette}
           >Удалить</button
         >
       </form>

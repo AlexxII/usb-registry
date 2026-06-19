@@ -58,3 +58,17 @@ export async function destroyDevice(id: number) {
   }
   return true;
 }
+
+export async function removeDevice(id: number) {
+  const response = await fetch(`${URL}/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json"
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return true;
+}
