@@ -1,5 +1,5 @@
 use crate::AppState;
-use crate::db::devices::{delete_device, get_all_devices, get_devices, insert_device, set_destroyed, update_device};
+use crate::db::devices::{delete_device, force_delete_device, get_all_devices, get_devices, insert_device, set_destroyed, update_device};
 use crate::errors::AppResult;
 use crate::models::device::{Device, DeviceUpload};
 use std::fs;
@@ -18,6 +18,7 @@ pub fn router() -> Router<AppState> {
         .route("/usb/devices/import", post(import_devices))
         .route("/usb/devices/{id}", put(update))
         .route("/usb/devices/{id}", delete(delete_device_from_bd))
+        .route("/usb/devices/{id}/force", delete(force_delet_device))
         .route("/usb/devices/{id}/destroy", put(mark_destroyed))
         .route("/usb/devices/{id}/undestroy", put(unmark_destroyed))
 }
@@ -78,6 +79,14 @@ async fn delete_device_from_bd(
     Json(flag): Json<bool>,
 ) -> AppResult<StatusCode> {
     delete_device(&state.pool, id, flag).await?;
+    Ok(StatusCode::OK)
+}
+
+async fn force_delet_device(
+    Path(id): Path<i64>,
+    State(state): State<AppState>,
+) -> AppResult<StatusCode> {
+    force_delete_device(&state.pool, id).await?;
     Ok(StatusCode::OK)
 }
 

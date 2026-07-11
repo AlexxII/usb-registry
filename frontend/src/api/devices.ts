@@ -4,11 +4,9 @@ const URL = "http://127.0.0.1:5151/usb/devices";
 
 export async function getDevices(): Promise<UsbFlashDevice[]> {
   const response = await fetch(URL);
-
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`);
   }
-
   return response.json();
 }
 
@@ -69,6 +67,7 @@ export async function destroyDevice(id: number) {
   return true;
 }
 
+// снять пометку об уничтоженнии
 export async function undestroyDevice(id: number) {
   const response = await fetch(`${URL}/${id}/undestroy`, {
     method: "PUT",
@@ -91,6 +90,20 @@ export async function removeDevice(id: number, flag: boolean) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify(flag),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return true;
+}
+
+export async function deleteDeviceCompletely(id: number) {
+  const response = await fetch(`${URL}/${id}/force`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json"
+    },
   });
 
   if (!response.ok) {

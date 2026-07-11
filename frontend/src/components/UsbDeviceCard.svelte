@@ -75,7 +75,15 @@
     {#if device.registered}
       <div class="rounded-box border border-secondary/20 bg-secondary/5 p-4">
         <div class="flex items-center gap-2 mb-4">
-          <div class="badge badge-secondary badge-sm">Registry</div>
+          {#if device.destroyed}
+            <div class="tooltip" data-tip="Носитель уничтожен">
+              <div class="badge badge-sm bg-red-700">
+                Registry
+              </div>
+            </div>
+          {:else}
+            <div class="badge badge-secondary badge-sm">Registry</div>
+          {/if}
 
           <span class="text-sm text-base-content/60">
             Учетные данные устройства

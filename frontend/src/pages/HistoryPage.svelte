@@ -62,7 +62,7 @@
 
       <tbody>
         {#each usbDevices as usb, index}
-          <tr>
+          <tr class:destroyed={usb.destroyed}>
             <td class="text-center">{index + 1}</td>
             <td class="text-center">{usb.manufacturer}</td>
             <td class="text-center">{usb.register_number ?? "-"}</td>

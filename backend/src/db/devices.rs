@@ -295,6 +295,15 @@ pub async fn delete_device(pool: &SqlitePool, id: i64, deleted: bool) -> Result<
 }
 
 #[allow(dead_code)]
+pub async fn force_delete_device(pool: &SqlitePool, id: i64) -> Result<u64, sqlx::Error> {
+    let result = sqlx::query("DELETE FROM devices WHERE id = ?")
+        .bind(id)
+        .execute(pool)
+        .await?;
+    Ok(result.rows_affected())
+}
+
+#[allow(dead_code)]
 pub async fn delete_devices(pool: &SqlitePool, ids: Vec<i64>) -> Result<u64, sqlx::Error> {
     let mut affected = 0;
     let mut tx = pool.begin().await?;

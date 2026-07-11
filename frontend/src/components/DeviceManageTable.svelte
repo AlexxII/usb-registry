@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { SquarePen, Trash2, CircleX, ArchiveRestore } from "@lucide/svelte";
+  import {
+    SquarePen,
+    Trash2,
+    CircleX,
+    ArchiveRestore,
+    OctagonX,
+    Undo2
+  } from "@lucide/svelte";
   import type { UsbFlashDevice } from "../types";
 
   let {
@@ -9,16 +16,20 @@
 
     toggleAll,
     toggleDevice,
+    onlyDeleted,
 
     toggleSort,
     editDevice,
     destroy,
     deleteDevice,
+    deleteDeviceEx,
+    undoDeletion,
     unmarkDestroy,
   }: {
     devices: UsbFlashDevice[];
     selected: Set<number>;
     allSelected: boolean;
+    onlyDeleted: boolean;
 
     toggleAll: () => void;
     toggleDevice: (id: number) => void;
@@ -27,6 +38,8 @@
     editDevice: (device: UsbFlashDevice) => void;
     destroy: (id: number) => void;
     deleteDevice: (id: number) => void;
+    deleteDeviceEx: (id: number) => void;
+    undoDeletion: (id: number) => void;
     unmarkDestroy: (id: number) => void;
   } = $props();
 </script>
@@ -124,39 +137,60 @@
             <td class="text-center">{usb.max_secclass ?? "-"}</td>
             <td class="text-center">{usb.zones ?? "-"}</td>
             <td class="text-center flex gap-1">
-              <div class="tooltip tooltip-left" data-tip="Изменить">
-                <SquarePen
-                  class="cursor-pointer"
-                  onclick={() => editDevice(usb)}
-                />
-              </div>
-              {#if !usb.destroyed}
-                <div
-                  class="tooltip tooltip-left"
-                  data-tip="Пометить как уничтоженное"
-                >
-                  <Trash2
+              {#if !onlyDeleted}
+                <div class="tooltip tooltip-left" data-tip="Изменить">
+                  <SquarePen
                     class="cursor-pointer"
-                    onclick={() => destroy(usb.id)}
+                    onclick={() => editDevice(usb)}
+                  />
+                </div>
+                {#if !usb.destroyed}
+                  <div
+                    class="tooltip tooltip-left"
+                    data-tip="Пометить как уничтоженное"
+                  >
+                    <Trash2
+                      class="cursor-pointer"
+                      onclick={() => destroy(usb.id)}
+                    />
+                  </div>
+                {:else}
+                  <div
+                    class="tooltip tooltip-left"
+                    data-tip="Снять пометку об уничтожении"
+                  >
+                    <ArchiveRestore
+                      class="cursor-pointer"
+                      onclick={() => unmarkDestroy(usb.id)}
+                    />
+                  </div>
+                {/if}
+                <div class="tooltip tooltip-left" data-tip="Удалить из базы">
+                  <CircleX
+                    class="cursor-pointer"
+                    onclick={() => deleteDevice(usb.id)}
                   />
                 </div>
               {:else}
                 <div
                   class="tooltip tooltip-left"
-                  data-tip="Снять пометку об уничтожении"
+                  data-tip="Восстановить"
                 >
-                  <ArchiveRestore
+                  <Undo2
                     class="cursor-pointer"
-                    onclick={() => unmarkDestroy(usb.id)}
+                    onclick={() => undoDeletion(usb.id)}
+                  />
+                </div>
+                <div
+                  class="tooltip tooltip-left"
+                  data-tip="Удалить безвозвратно"
+                >
+                  <OctagonX
+                    class="cursor-pointer"
+                    onclick={() => deleteDeviceEx(usb.id)}
                   />
                 </div>
               {/if}
-              <div class="tooltip tooltip-left" data-tip="Удалить из базы">
-                <CircleX
-                  class="cursor-pointer"
-                  onclick={() => deleteDevice(usb.id)}
-                />
-              </div>
             </td>
           </tr>
         {/each}
