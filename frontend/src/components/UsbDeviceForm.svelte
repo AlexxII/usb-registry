@@ -27,6 +27,9 @@
       conclusion_number: String(device?.conclusion_number ?? ""),
       prescription: String(device?.prescription ?? ""),
       zones: device?.zones ?? "",
+
+      deleted: device?.deleted ?? false,
+      destroyed: device?.destroyed ?? false
     };
   }
 

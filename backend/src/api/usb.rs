@@ -19,6 +19,7 @@ pub fn router() -> Router<AppState> {
         .route("/usb/devices/{id}", put(update))
         .route("/usb/devices/{id}", delete(delete_device_from_bd))
         .route("/usb/devices/{id}/destroy", put(mark_destroyed))
+        .route("/usb/devices/{id}/undestroy", put(unmark_destroyed))
 }
 
 #[allow(dead_code)]
@@ -60,6 +61,14 @@ async fn mark_destroyed(
     State(state): State<AppState>,
 ) -> AppResult<StatusCode> {
     set_destroyed(&state.pool, id, true).await?;
+    Ok(StatusCode::OK)
+}
+
+async fn unmark_destroyed(
+    Path(id): Path<i64>,
+    State(state): State<AppState>,
+) -> AppResult<StatusCode> {
+    set_destroyed(&state.pool, id, false).await?;
     Ok(StatusCode::OK)
 }
 

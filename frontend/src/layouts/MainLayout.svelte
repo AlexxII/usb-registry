@@ -1,17 +1,18 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { goto } from "@mateothegreat/svelte5-router";
+  import { onMount, tick } from "svelte";
+  import { goto} from "@mateothegreat/svelte5-router";
   import { navigation } from "../app/navigation";
 
   const AXUM_SERVER = "http://127.0.0.1:5151";
 
   let { children } = $props();
 
+  let currentPath = $state(window.location.pathname);
+
   let pageTitle = $derived(
     navigation.find((item) => item.href === currentPath)?.title ?? "",
   );
 
-  let currentPath = $state(window.location.pathname);
   const updatePath = () => {
     currentPath = window.location.pathname;
   };
@@ -51,16 +52,18 @@
     sessionStorage.setItem("admin-token", data.token);
     passwordModal?.close();
     password = "";
-    updatePath();
     goto("/device-manage");
+    await tick();
+    updatePath();
   }
 
-  function navigate(item: any) {
+  async function navigate(item: any) {
     if (item.href === "/device-manage") {
       openManagement();
       return;
     }
     goto(item.href);
+    await tick();
     updatePath();
   }
 </script>

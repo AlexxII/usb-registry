@@ -12,7 +12,6 @@ export async function getDevices(): Promise<UsbFlashDevice[]> {
   return response.json();
 }
 
-
 export async function getAllDevices(): Promise<UsbFlashDevice[]> {
   const response = await fetch(`${URL}/all`);
 
@@ -58,6 +57,20 @@ export async function updateDevice(id: number, device: any) {
 // пометит как уничтоженное 
 export async function destroyDevice(id: number) {
   const response = await fetch(`${URL}/${id}/destroy`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return true;
+}
+
+export async function undestroyDevice(id: number) {
+  const response = await fetch(`${URL}/${id}/undestroy`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"

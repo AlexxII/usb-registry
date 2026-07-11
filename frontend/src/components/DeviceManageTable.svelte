@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SquarePen, Trash2, CircleX } from "@lucide/svelte";
+  import { SquarePen, Trash2, CircleX, ArchiveRestore } from "@lucide/svelte";
   import type { UsbFlashDevice } from "../types";
 
   let {
@@ -14,6 +14,7 @@
     editDevice,
     destroy,
     deleteDevice,
+    unmarkDestroy,
   }: {
     devices: UsbFlashDevice[];
     selected: Set<number>;
@@ -26,14 +27,11 @@
     editDevice: (device: UsbFlashDevice) => void;
     destroy: (id: number) => void;
     deleteDevice: (id: number) => void;
+    unmarkDestroy: (id: number) => void;
   } = $props();
 </script>
 
 <div class="space-y-4">
-  <!-- filters -->
-
-  <!-- table -->
-
   <div class="overflow-x-auto rounded-box border border-base-300">
     <table class="table table-zebra table-pin-rows">
       <thead>
@@ -89,7 +87,10 @@
 
       <tbody>
         {#each devices as usb}
-          <tr class:selected-row={selected.has(usb.id)}>
+          <tr
+            class:selected-row={selected.has(usb.id)}
+            class:destroyed={usb.destroyed}
+          >
             <td class="text-center">
               <input
                 checked={selected.has(usb.id)}
@@ -129,12 +130,27 @@
                   onclick={() => editDevice(usb)}
                 />
               </div>
-              <div class="tooltip tooltip-left" data-tip="Пометить как уничтоженное">
-                <Trash2
-                  class="cursor-pointer"
-                  onclick={() => destroy(usb.id)}
-                />
-              </div>
+              {#if !usb.destroyed}
+                <div
+                  class="tooltip tooltip-left"
+                  data-tip="Пометить как уничтоженное"
+                >
+                  <Trash2
+                    class="cursor-pointer"
+                    onclick={() => destroy(usb.id)}
+                  />
+                </div>
+              {:else}
+                <div
+                  class="tooltip tooltip-left"
+                  data-tip="Снять пометку об уничтожении"
+                >
+                  <ArchiveRestore
+                    class="cursor-pointer"
+                    onclick={() => unmarkDestroy(usb.id)}
+                  />
+                </div>
+              {/if}
               <div class="tooltip tooltip-left" data-tip="Удалить из базы">
                 <CircleX
                   class="cursor-pointer"

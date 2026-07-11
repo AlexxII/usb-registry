@@ -18,6 +18,8 @@ export type UsbFlashDevice = {
   zones: string | null;
   last_seen: string;
   first_seen: string;
+  destroyed: boolean,
+  deleted: boolean
 };
 
 export type FormData = {
@@ -37,5 +39,8 @@ export type FormData = {
   conclusion_number: string;
   prescription: string;
   zones: string;
+  destroyed: boolean,
+  deleted: boolean
+
 };
 

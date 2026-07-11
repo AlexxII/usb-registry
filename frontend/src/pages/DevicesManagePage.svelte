@@ -7,6 +7,7 @@
   import {
     createDevice,
     destroyDevice,
+    undestroyDevice,
     getAllDevices,
     getDevices,
     removeDevice,
@@ -153,7 +154,6 @@
     return {
       ...payload,
       registered: true,
-      destroyed: false,
     };
   }
 
@@ -170,7 +170,6 @@
 
   async function update(id: any, payload: any) {
     try {
-      console.log(payload);
       await updateDevice(id, payload);
       modalRef?.close();
       await reloadDevices();
@@ -188,12 +187,23 @@
     }
   }
 
+  // пометить как уничтоженное
   async function destroy(id: number) {
     try {
       await destroyDevice(id);
       await reloadDevices();
     } catch (error) {
       alert("Не удалось пометить как уничтоженное");
+    }
+  }
+
+  // снять пометку об уничтоженнии
+  async function unmarkDestroy(id: number) {
+    try {
+      await undestroyDevice(id);
+      await reloadDevices();
+    } catch (error) {
+      alert("Не удалось снять пометку об уничтоженнии");
     }
   }
 
@@ -267,6 +277,7 @@
       {editDevice}
       {destroy}
       {deleteDevice}
+      {unmarkDestroy}
     />
   </AdminGuard>
 </div>

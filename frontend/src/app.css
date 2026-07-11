@@ -3,3 +3,7 @@
 @plugin "daisyui" {
   themes: dracula --default, dark, silk;
 }
+
+.destroyed {
+  color: red;
+}
