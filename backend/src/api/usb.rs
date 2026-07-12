@@ -1,7 +1,10 @@
 use crate::AppState;
-use crate::db::devices::{delete_device, force_delete_device, get_all_devices, get_devices, insert_device, set_destroyed, update_device};
+use crate::db::devices::{
+    delete_device, force_delete_device, get_all_devices, get_devices, insert_device, set_destroyed,
+    update_device,
+};
 use crate::errors::AppResult;
-use crate::models::device::{Device, DeviceUpload};
+use crate::models::device::{CsvImport, CsvRow, Device, DeviceUpload};
 use std::fs;
 
 use axum::extract::{Path, State};
@@ -92,4 +95,11 @@ async fn force_delet_device(
 
 async fn delete_devices(State(state): State<AppState>) {}
 
-async fn import_devices(State(state): State<AppState>, Json(ids): Json<Vec<DeviceUpload>>) {}
+async fn import_devices(
+    State(state): State<AppState>,
+    // Json(devices): Json<Vec<CsvRow>>,
+    Json(devices): Json<CsvImport>,
+) -> AppResult<StatusCode> {
+    println!("{:?}", &devices);
+    Ok(StatusCode::OK)
+}

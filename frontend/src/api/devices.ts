@@ -111,3 +111,18 @@ export async function deleteDeviceCompletely(id: number) {
   }
   return true;
 }
+
+export async function sendImport(csvImport: string) {
+  const response = await fetch(`${URL}/import`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(csvImport),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return true;
+}

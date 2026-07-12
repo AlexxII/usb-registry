@@ -332,3 +332,5 @@ pub async fn set_destroyed(
 
     Ok(result.rows_affected())
 }
+
+pub async fn import_devices() {}

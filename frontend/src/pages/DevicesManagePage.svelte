@@ -12,9 +12,11 @@
     removeDevice,
     updateDevice,
     deleteDeviceCompletely,
+    sendImport,
   } from "../api/devices";
   import type { UsbFlashDevice } from "../types";
   import UsbDeviceImport from "../components/UsbDeviceImport.svelte";
+  import { analizeData } from "../api/utils";
 
   let usbDevices = $state<UsbFlashDevice[]>([]);
   let editedDevice = $state<UsbFlashDevice | undefined>();
@@ -281,8 +283,15 @@
   }
 
   // импорт устройств
-  async function importData(payload) {
-    console.log(payload);
+  async function importData(payload: { fileName: string; content: string }) {
+    try {
+      let data = analizeData(payload.content);
+      console.log(data)
+      await sendImport(data);
+    } catch (e) {
+      alert("Что-то пошло не так");
+      console.log(e);
+    }
   }
 </script>
 
@@ -328,6 +337,7 @@
   <div class="modal-box">
     <UsbDeviceImport {importData} />
   </div>
+  <p class="import_modal_info"></p>
 
   <form method="dialog" class="modal-backdrop">
     <button>close</button>

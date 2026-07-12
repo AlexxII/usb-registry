@@ -52,3 +52,28 @@ pub struct DeviceUpload {
     pub destroyed: bool,
     pub deleted: bool,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CsvImport {
+    pub data: Vec<CsvRow>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct CsvRow {
+    pub manufacturer: String,
+    pub capacity: String,
+    pub serial: String,
+
+    pub assigned_number: Option<String>,
+    pub register_number: Option<String>,
+    pub conclusion_number: Option<String>,
+    pub prescription: Option<String>,
+
+    pub owner: Option<String>,
+
+    pub secclass: Option<String>,
+    pub max_secclass: Option<String>,
+    pub zones: Option<String>,
+
+    pub destroyed: bool,
+}

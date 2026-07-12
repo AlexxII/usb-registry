@@ -15,16 +15,20 @@
     }
 
     const file = files[0];
+    // 10 MB limit
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Файл слишком большой!");
+      return;
+    }
     const reader = new FileReader();
 
     reader.onload = (e) => {
       const textContent = e.target?.result;
-      console.log(textContent);
 
-      // importData({
-      //   fileName: file.name,
-      //   content: textContent,
-      // });
+      importData({
+        fileName: file.name,
+        content: textContent,
+      });
     };
 
     reader.onerror = () => {
