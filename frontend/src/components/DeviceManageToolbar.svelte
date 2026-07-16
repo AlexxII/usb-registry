@@ -8,6 +8,7 @@
     onlySecret = $bindable(),
     onlyInternet = $bindable(),
     onlyDeleted = $bindable(),
+    deletedCount,
     importDevices,
     exportDevices,
     selectedCount,
@@ -62,7 +63,12 @@
       type="checkbox"
       class="checkbox checkbox-sm"
     />
-    <span>Удаленные</span>
+    <div class="indicator">
+      <span class="indicator-item badge badge-secondary"
+        >{deletedCount}</span
+      >
+      <span class="pr-4">Удаленные</span>
+    </div>
   </label>
 
   <div class="ml-auto gap-2">

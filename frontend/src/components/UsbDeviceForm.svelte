@@ -6,7 +6,7 @@
     save,
   }: {
     device?: UsbFlashDevice;
-    save: (payload: FormData & { id?: string }) => void;
+    save: (payload: UsbFlashDevice) => void;
   } = $props();
 
   function createForm(device?: UsbFlashDevice): FormData {
@@ -29,7 +29,7 @@
       zones: device?.zones ?? "",
 
       deleted: device?.deleted ?? false,
-      destroyed: device?.destroyed ?? false
+      destroyed: device?.destroyed ?? false,
     };
   }
 

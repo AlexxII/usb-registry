@@ -121,8 +121,11 @@ export async function sendImport(csvImport: string) {
     body: JSON.stringify(csvImport),
   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}`);
+  const result = await response.json();
+
+  if (!response.ok && !result.errors) {
+    throw new Error("Сервер недоступен");
   }
-  return true;
+
+  return result; 
 }

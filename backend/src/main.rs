@@ -5,15 +5,15 @@ use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use tokio::net::TcpListener;
 
 mod api;
+mod db;
+mod errors;
 mod models;
 mod server;
 mod usb;
-mod db;
-mod errors;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub pool: SqlitePool
+    pub pool: SqlitePool,
 }
 
 const ADDR: &str = "127.0.0.1:5151";
@@ -21,7 +21,7 @@ const DATABASE_URL: &str = "sqlite:app.db";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-
+    tracing_subscriber::fmt::init();
     // TODO - read about sqlite connection options + understand what is SqliteJournalMode
     let options = SqliteConnectOptions::from_str(DATABASE_URL)?
         .create_if_missing(true)
@@ -33,13 +33,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
 
     // TODO - check that file is there!!
-    sqlx::migrate!("./migrations")
-        .run(&pool)
-        .await?;
+    sqlx::migrate!("./migrations").run(&pool).await?;
 
-    let state = AppState {
-        pool
-    };
+    api::auth::ensure_default_admin(&pool)
+        .await
+        .expect("Не удалось проверить/создать дефолтного админа");
+
+    let state = AppState { pool };
 
     let app = server::main_router(state);
 

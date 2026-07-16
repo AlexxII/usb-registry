@@ -15,8 +15,8 @@
     sendImport,
   } from "../api/devices";
   import type { UsbFlashDevice } from "../types";
-  import UsbDeviceImport from "../components/UsbDeviceImport.svelte";
   import { analizeData } from "../api/utils";
+  import UsbDeviceImportModal from "../components/UsbDeviceImportModal.svelte";
 
   let usbDevices = $state<UsbFlashDevice[]>([]);
   let editedDevice = $state<UsbFlashDevice | undefined>();
@@ -38,6 +38,14 @@
   let importModalRef = $state<HTMLDialogElement | null>(null);
   let confirmModalRef = $state<HTMLDialogElement | null>(null);
   let deletedId = $state<number | null>(null);
+
+  // состояния для импорта
+  let importReport = $state({
+    successCount: 0,
+    errorCount: 0,
+    errors: [] as Array<{ line: number; message: string }>,
+  });
+  let hasReport = $state(false);
 
   onMount(async () => {
     usbDevices = await getAllDevices();
@@ -113,6 +121,16 @@
 
     return result;
   });
+
+
+  const deletedCount = $derived.by(() => {
+    return usbDevices.reduce((acc, item) => {
+      if (item.deleted) {
+        acc += 1;
+      }
+      return acc;
+    }, 0)
+  })
 
   const allSelected = $derived.by(() => {
     if (!filteredDevices.length) {
@@ -249,7 +267,10 @@
     completeDeletion = false;
   }
 
-  function handleImportModalClose() {}
+  async function handleImportModalClose() {
+    hasReport = false;
+    await reloadDevices();
+  }
 
   async function deleteDeviceEx(id: number) {
     completeDeletion = true;
@@ -285,12 +306,47 @@
   // импорт устройств
   async function importData(payload: { fileName: string; content: string }) {
     try {
+      // Сбрасываем состояние перед новым импортом
+      hasReport = false;
+      importReport.successCount = 0;
+      importReport.errorCount = 0;
+      importReport.errors = [];
+
+      // Локальная валидация (кол-во колонок)
       let data = analizeData(payload.content);
-      console.log(data)
-      await sendImport(data);
-    } catch (e) {
-      alert("Что-то пошло не так");
-      console.log(e);
+
+      // Отправка на бэкенд
+      const response = await sendImport(data);
+
+      // Логируем в консоль для проверки структуры приходящего JSON
+      console.log("Ответ сервера:", response);
+
+      // Записываем данные из snake_case (Rust) в camelCase (JS)
+      importReport.successCount = response.success_count;
+      importReport.errorCount = response.error_count;
+      importReport.errors = response.errors || [];
+
+      // Включаем отображение карточки daisyUI
+      hasReport = true;
+    } catch (e: any) {
+      hasReport = true;
+
+      try {
+        // Если упал локальный analizeData
+        let localError = JSON.parse(e.message);
+        importReport.successCount = 0;
+        importReport.errorCount = 1;
+        importReport.errors = [
+          { line: localError.line, message: localError.text },
+        ];
+      } catch {
+        // Если произошел сетевой сбой или сервер вернул 500 без JSON
+        importReport.successCount = 0;
+        importReport.errorCount = 1;
+        importReport.errors = [
+          { line: 0, message: e.message || "Не удалось связаться с сервером" },
+        ];
+      }
     }
   }
 </script>
@@ -329,20 +385,13 @@
   </form>
 </dialog>
 
-<dialog
-  bind:this={importModalRef}
-  class="modal"
-  onclose={handleImportModalClose}
->
-  <div class="modal-box">
-    <UsbDeviceImport {importData} />
-  </div>
-  <p class="import_modal_info"></p>
-
-  <form method="dialog" class="modal-backdrop">
-    <button>close</button>
-  </form>
-</dialog>
+<UsbDeviceImportModal
+  bind:importModalRef
+  bind:hasReport
+  bind:importReport
+  {handleImportModalClose}
+  {importData}
+/>
 
 <div class="space-y-4">
   <AdminGuard>
@@ -357,6 +406,7 @@
       onAdd={addNewDevice}
       {importDevices}
       {exportDevices}
+      {deletedCount}
     />
 
     <DeviceManageTable
