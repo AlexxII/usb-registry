@@ -43,3 +43,20 @@ export type FormData = {
   deleted: boolean
 
 };
+
+export type ExportUsbDevices = {
+  manufacturer: string;
+  serial: string;
+  assigned_number: string, // заводской номер, присвоенный при СП номер
+  capacity: string;
+  secclass: "С" | "СС" | "ОВ" | "Н/С" | null;
+  max_secclass: "С" | "СС" | "ОВ" | "Н/С" | null;
+  owner: string | null;
+  register_number: string | number | null;
+  conclusion_number: string | number | null;
+  prescription: string | number | null;
+  zones: string | null;
+  destroyed: boolean,
+  deleted: boolean
+};
+

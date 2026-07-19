@@ -29,7 +29,7 @@
     try {
       const response = await fetch(`${AXUM_SERVER}/auth/verify`, {
         method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { "Authorization": `Bearer ${token}` }
       });
       return response.ok;
     } catch {
@@ -59,9 +59,7 @@
       updatePath();
     }
 
-    return () => {
-      window.removeEventListener("popstate", updatePath);
-    };
+    return () => { window.removeEventListener("popstate", updatePath); };
   });
 
   // Модалка входа
@@ -81,7 +79,7 @@
     }
     const data = await response.json();
     sessionStorage.setItem("admin-token", data.token);
-
+    
     isAuthorized = true;
     passwordModal?.close();
     password = "";
@@ -97,16 +95,16 @@
 
   async function submitPasswordChange() {
     const token = sessionStorage.getItem("admin-token");
-
+    
     const response = await fetch(`${AXUM_SERVER}/auth/change-password`, {
       method: "POST",
-      headers: {
+      headers: { 
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
         old_password: oldPassword,
-        new_password: newPassword,
+        new_password: newPassword
       }),
     });
 
@@ -130,7 +128,7 @@
 
   async function navigate(item: any) {
     if (item.href === "/device-manage") {
-      if (hasLocalToken() && (await checkTokenValidity())) {
+      if (hasLocalToken() && await checkTokenValidity()) {
         isAuthorized = true;
         goto("/device-manage");
         await tick();
@@ -152,12 +150,7 @@
 <dialog bind:this={passwordModal} class="modal">
   <div class="modal-box">
     <h3 class="font-bold text-lg">Вход администратора</h3>
-    <input
-      bind:value={password}
-      type="password"
-      class="input input-bordered w-full mt-4"
-      placeholder="Введите пароль"
-    />
+    <input bind:value={password} type="password" class="input input-bordered w-full mt-4" placeholder="Введите пароль" />
     <div class="modal-action">
       <button class="btn btn-primary" onclick={loginAdmin}> Войти </button>
       <form method="dialog"><button class="btn">Отмена</button></form>
@@ -169,24 +162,12 @@
 <dialog bind:this={changePasswordModal} class="modal">
   <div class="modal-box">
     <h3 class="font-bold text-lg">Изменение пароля</h3>
-
-    <input
-      bind:value={oldPassword}
-      type="password"
-      class="input input-bordered w-full mt-4"
-      placeholder="Старый пароль"
-    />
-    <input
-      bind:value={newPassword}
-      type="password"
-      class="input input-bordered w-full mt-2"
-      placeholder="Новый пароль"
-    />
-
+    
+    <input bind:value={oldPassword} type="password" class="input input-bordered w-full mt-4" placeholder="Старый пароль" />
+    <input bind:value={newPassword} type="password" class="input input-bordered w-full mt-2" placeholder="Новый пароль" />
+    
     <div class="modal-action">
-      <button class="btn btn-warning" onclick={submitPasswordChange}>
-        Сохранить
-      </button>
+      <button class="btn btn-warning" onclick={submitPasswordChange}> Сохранить </button>
       <form method="dialog"><button class="btn">Отмена</button></form>
     </div>
   </div>
@@ -197,17 +178,13 @@
     <div class="flex-1">
       <h1 class="text-xl font-semibold">{pageTitle}</h1>
     </div>
-
+    
     <div class="flex items-center gap-4">
       <div class="flex gap-2">
         {#each navigation as item}
           {@const Icon = item.icon}
           <div class="tooltip tooltip-left" data-tip={item.title}>
-            <button
-              class="btn btn-ghost btn-sm"
-              class:btn-active={currentPath === item.href}
-              onclick={() => navigate(item)}
-            >
+            <button class="btn btn-ghost btn-sm" class:btn-active={currentPath === item.href} onclick={() => navigate(item)}>
               <Icon />
             </button>
           </div>
@@ -217,10 +194,7 @@
       <!-- Кнопки управления аккаунтом админа -->
       {#if isAuthorized}
         <div class="flex gap-2">
-          <button
-            class="btn btn-outline btn-warning btn-sm"
-            onclick={() => changePasswordModal?.showModal()}
-          >
+          <button class="btn btn-outline btn-warning btn-sm" onclick={() => changePasswordModal?.showModal()}>
             Сменить пароль
           </button>
           <button class="btn btn-outline btn-error btn-sm" onclick={logout}>

@@ -14,7 +14,7 @@
     deleteDeviceCompletely,
     sendImport,
   } from "../api/devices";
-  import type { UsbFlashDevice } from "../types";
+  import type { ExportUsbDevices, UsbFlashDevice } from "../types";
   import { analizeData } from "../api/utils";
   import UsbDeviceImportModal from "../components/UsbDeviceImportModal.svelte";
 
@@ -26,6 +26,20 @@
   let onlyRegistered = $state(false);
   let onlySecret = $state(false);
   let onlyInternet = $state(false);
+
+  // Если onlySecret становится true, выключаем onlyInternet
+  $effect(() => {
+    if (onlySecret) {
+      onlyInternet = false;
+    }
+  });
+  // Если onlyInternet становится true, выключаем onlySecret
+  $effect(() => {
+    if (onlyInternet) {
+      onlySecret = false;
+    }
+  });
+
   let onlyDeleted = $state(false);
   let completeDeletion = $state(false);
   let onlyActive = $state(false);
@@ -122,15 +136,14 @@
     return result;
   });
 
-
   const deletedCount = $derived.by(() => {
     return usbDevices.reduce((acc, item) => {
       if (item.deleted) {
         acc += 1;
       }
       return acc;
-    }, 0)
-  })
+    }, 0);
+  });
 
   const allSelected = $derived.by(() => {
     if (!filteredDevices.length) {
@@ -171,7 +184,46 @@
 
   // экспортировать сведения в csv
   function exportDevices() {
-    console.log(selected);
+    const selectedDevices = usbDevices
+      .filter((usb) => selected.has(usb.id))
+      .map((usb) => $state.snapshot(usb));
+    let preparedData = prepareDataForExport(selectedDevices);
+    const blob = new Blob([preparedData], {
+      type: "application/csv",
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "usb_export.csv";
+    a.click();
+
+    URL.revokeObjectURL(url);
+  }
+
+  function prepareDataForExport(devices: UsbFlashDevice[]): string {
+    let exportUsbDevices: ExportUsbDevices[] = devices.map((item) => {
+      return {
+        manufacturer: item.manufacturer,
+        capacity: item.capacity,
+        serial: item.serial,
+        assigned_number: item.assigned_number,
+        register_number: item.register_number,
+        conclusion_number: item.conclusion_number,
+        prescription: item.prescription,
+        owner: item.owner,
+        secclass: item.secclass,
+        max_secclass: item.max_secclass,
+        zones: item.zones,
+        deleted: item.deleted,
+        destroyed: item.destroyed,
+      };
+    });
+
+    return exportUsbDevices
+      .map((item) => Object.values(item).join(";"))
+      .join("\n");
   }
 
   function editDevice(device: UsbFlashDevice) {
