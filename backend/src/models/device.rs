@@ -143,3 +143,12 @@ fn is_special(register_number: &Option<String>) -> bool {
         .as_deref()
         .map_or(false, |s| s.contains("-СД"))
 }
+
+pub struct UsbDevice {
+    pub manufacturer: String,
+    pub product: String,
+    pub serial: String,
+
+    pub vid: Option<u16>,
+    pub pid: Option<u16>,
+}

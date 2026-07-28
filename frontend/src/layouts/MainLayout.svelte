@@ -7,9 +7,10 @@
 
   let { children } = $props();
 
+  // индикатор загрузки
+  let loading = $state();
   let currentPath = $state(window.location.pathname);
   let isAuthorized = $state(false);
-
   let pageTitle = $derived(
     navigation.find((item) => item.href === currentPath)?.title ?? "",
   );
@@ -29,7 +30,7 @@
     try {
       const response = await fetch(`${AXUM_SERVER}/auth/verify`, {
         method: "GET",
-        headers: { "Authorization": `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       return response.ok;
     } catch {
@@ -59,7 +60,9 @@
       updatePath();
     }
 
-    return () => { window.removeEventListener("popstate", updatePath); };
+    return () => {
+      window.removeEventListener("popstate", updatePath);
+    };
   });
 
   // Модалка входа
@@ -67,6 +70,7 @@
   let password = $state("");
 
   async function loginAdmin() {
+    loading = true;
     const response = await fetch(`${AXUM_SERVER}/auth/admin`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -75,12 +79,14 @@
 
     if (!response.ok) {
       alert("Неверный пароль");
+      loading = false;
       return;
     }
     const data = await response.json();
     sessionStorage.setItem("admin-token", data.token);
-    
+
     isAuthorized = true;
+    loading = false;
     passwordModal?.close();
     password = "";
     goto("/device-manage");
@@ -95,40 +101,44 @@
 
   async function submitPasswordChange() {
     const token = sessionStorage.getItem("admin-token");
-    
+    loading = true;
+
     const response = await fetch(`${AXUM_SERVER}/auth/change-password`, {
       method: "POST",
-      headers: { 
+      headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         old_password: oldPassword,
-        new_password: newPassword
+        new_password: newPassword,
       }),
     });
 
     if (response.status === 401) {
       alert("Сессия истекла. Войдите заново.");
+      loading = false;
       logout();
       changePasswordModal?.close();
       return;
     }
 
     if (!response.ok) {
+      loading = false;
       alert("Неверный старый пароль");
       return;
     }
 
     alert("Пароль успешно изменен!");
     changePasswordModal?.close();
+    loading = false;
     oldPassword = "";
     newPassword = "";
   }
 
   async function navigate(item: any) {
     if (item.href === "/device-manage") {
-      if (hasLocalToken() && await checkTokenValidity()) {
+      if (hasLocalToken() && (await checkTokenValidity())) {
         isAuthorized = true;
         goto("/device-manage");
         await tick();
@@ -144,32 +154,70 @@
     await tick();
     updatePath();
   }
+
+  function handlePassKey(e: KeyboardEvent) {
+    if (e.key == "Enter") {
+      loginAdmin();
+    }
+  }
+
+  function handlePassChangeKey(e: KeyboardEvent) {
+    if (e.key == "Enter") {
+      submitPasswordChange();
+    }
+  }
 </script>
 
 <!-- Модалка Входа -->
 <dialog bind:this={passwordModal} class="modal">
-  <div class="modal-box">
+  <div class="modal-box w-full">
     <h3 class="font-bold text-lg">Вход администратора</h3>
-    <input bind:value={password} type="password" class="input input-bordered w-full mt-4" placeholder="Введите пароль" />
-    <div class="modal-action">
-      <button class="btn btn-primary" onclick={loginAdmin}> Войти </button>
-      <form method="dialog"><button class="btn">Отмена</button></form>
-    </div>
+    {#if !loading}
+      <input
+        bind:value={password}
+        type="password"
+        class="input input-bordered w-full mt-4"
+        placeholder="Введите пароль"
+        onkeydown={handlePassKey}
+      />
+      <div class="modal-action">
+        <button class="btn btn-primary" onclick={loginAdmin}> Войти </button>
+        <form method="dialog"><button class="btn">Отмена</button></form>
+      </div>
+    {:else}
+      <div class="loading">Загрузка</div>
+    {/if}
   </div>
 </dialog>
-
 <!-- Новая модалка Смены Пароля -->
 <dialog bind:this={changePasswordModal} class="modal">
   <div class="modal-box">
     <h3 class="font-bold text-lg">Изменение пароля</h3>
-    
-    <input bind:value={oldPassword} type="password" class="input input-bordered w-full mt-4" placeholder="Старый пароль" />
-    <input bind:value={newPassword} type="password" class="input input-bordered w-full mt-2" placeholder="Новый пароль" />
-    
-    <div class="modal-action">
-      <button class="btn btn-warning" onclick={submitPasswordChange}> Сохранить </button>
-      <form method="dialog"><button class="btn">Отмена</button></form>
-    </div>
+    {#if !loading}
+      <input
+        bind:value={oldPassword}
+        type="password"
+        class="input input-bordered w-full mt-4"
+        placeholder="Старый пароль"
+        onkeydown={handlePassChangeKey}
+      />
+      <input
+        bind:value={newPassword}
+        type="password"
+        class="input input-bordered w-full mt-2"
+        placeholder="Новый пароль"
+        onkeydown={handlePassChangeKey}
+      />
+
+      <div class="modal-action">
+        <button class="btn btn-warning" onclick={submitPasswordChange}>
+          Сохранить
+        </button>
+        <form method="dialog"><button class="btn">Отмена</button></form>
+      </div>
+    {:else}
+      <div class="loading">Загрузка</div>
+    {/if}
   </div>
 </dialog>
 
@@ -178,13 +226,17 @@
     <div class="flex-1">
       <h1 class="text-xl font-semibold">{pageTitle}</h1>
     </div>
-    
+
     <div class="flex items-center gap-4">
       <div class="flex gap-2">
         {#each navigation as item}
           {@const Icon = item.icon}
           <div class="tooltip tooltip-left" data-tip={item.title}>
-            <button class="btn btn-ghost btn-sm" class:btn-active={currentPath === item.href} onclick={() => navigate(item)}>
+            <button
+              class="btn btn-ghost btn-sm"
+              class:btn-active={currentPath === item.href}
+              onclick={() => navigate(item)}
+            >
               <Icon />
             </button>
           </div>
@@ -194,7 +246,10 @@
       <!-- Кнопки управления аккаунтом админа -->
       {#if isAuthorized}
         <div class="flex gap-2">
-          <button class="btn btn-outline btn-warning btn-sm" onclick={() => changePasswordModal?.showModal()}>
+          <button
+            class="btn btn-outline btn-warning btn-sm"
+            onclick={() => changePasswordModal?.showModal()}
+          >
             Сменить пароль
           </button>
           <button class="btn btn-outline btn-error btn-sm" onclick={logout}>

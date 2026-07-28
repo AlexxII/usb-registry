@@ -26,6 +26,8 @@ pub fn router() -> Router<AppState> {
         .route("/usb/devices/{id}/force", delete(force_delet_device))
         .route("/usb/devices/{id}/destroy", put(mark_destroyed))
         .route("/usb/devices/{id}/undestroy", put(unmark_destroyed))
+        .route("/usb/current", get(get_current))
+        .route("/usb/history", get(get_history))
 }
 
 #[allow(dead_code)]
@@ -217,4 +219,8 @@ async fn import_devices_ex(
     };
 
     Ok((status, Json(response)))
+}
+
+pub async fn get_current() -> Result<Vec<UsbDevices>> {
+    Ok()
 }
