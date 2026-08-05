@@ -2,12 +2,27 @@ use axum::Json;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use serde::Serialize;
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum DeviceError {
+    #[error("Ошибка WinAPI: {0}")]
+    WinApi(String),
+
+    #[error("Ошибка реестра Windows: {0}")]
+    Registry(String),
+
+    #[error("Ошибка сопоставления данных: {0}")]
+    Mapping(String),
+}
 
 pub enum AppError {
     Validation(String),
+    BadRequest(String),
     BatchValidation(Vec<BatchErrorItem>),
     NotFound,
     Database(sqlx::Error),
+    Device(DeviceError),
 }
 
 #[derive(Serialize)]
@@ -35,6 +50,9 @@ impl IntoResponse for AppError {
                 Json(ErrorResponse { error: message }),
             )
                 .into_response(),
+            AppError::BadRequest(error) => {
+                (StatusCode::BAD_REQUEST, Json(ErrorResponse { error })).into_response()
+            }
             AppError::BatchValidation(errors) => {
                 let response = BatchErrorResponse {
                     error: format!("Импорт не завершён: {} ошибок", errors.len()),
@@ -50,8 +68,20 @@ impl IntoResponse for AppError {
             )
                 .into_response(),
 
+            AppError::Device(err) => {
+                tracing::error!("Device subsystem error occurred: {:?}", err);
+                let message = err.to_string();
+
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(ErrorResponse { error: message }),
+                )
+                    .into_response()
+            }
+
             AppError::Database(err) => {
                 tracing::error!("Database error occurred: {:?}", err);
+
                 let (status, message) = match &err {
                     sqlx::Error::RowNotFound => (
                         StatusCode::NOT_FOUND,
@@ -86,9 +116,21 @@ impl IntoResponse for AppError {
     }
 }
 
+impl From<String> for AppError {
+    fn from(err: String) -> Self {
+        AppError::BadRequest(err)
+    }
+}
+
 impl From<sqlx::Error> for AppError {
     fn from(err: sqlx::Error) -> Self {
         AppError::Database(err)
+    }
+}
+
+impl From<DeviceError> for AppError {
+    fn from(err: DeviceError) -> Self {
+        AppError::Device(err)
     }
 }
 

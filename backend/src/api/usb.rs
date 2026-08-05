@@ -4,18 +4,21 @@ use crate::db::devices::{
     update_device,
 };
 use crate::errors::{AppError, AppResult, BatchErrorItem};
-use crate::models::device::{Device, DeviceImport, DeviceUpload};
+use crate::models::device::{Device, DeviceImport, DeviceUpload, MappedDevice};
+use crate::usb::current::get_current_usb;
+use crate::usb::utils::map_devices;
 use std::{fs, usize};
 
 use axum::body::Body;
 use axum::extract::{Path, State};
-use axum::http::StatusCode;
+use axum::http::{StatusCode, response};
 use axum::routing::{delete, get, post, put};
 use axum::{Json, Router};
 use serde_json::json;
 
 pub fn router() -> Router<AppState> {
     Router::new()
+        .route("/usb/devices/file", get(list_devices_from_file))
         .route("/usb/devices", get(list_devices))
         .route("/usb/devices/all", get(list_devices_all))
         .route("/usb/devices", post(create_device))
@@ -27,14 +30,14 @@ pub fn router() -> Router<AppState> {
         .route("/usb/devices/{id}/destroy", put(mark_destroyed))
         .route("/usb/devices/{id}/undestroy", put(unmark_destroyed))
         .route("/usb/current", get(get_current))
-        .route("/usb/history", get(get_history))
+    // .route("/usb/history", get(get_history))
 }
 
 #[allow(dead_code)]
-async fn list_devices_from_file(State(_): State<AppState>) -> Json<Vec<Device>> {
+async fn list_devices_from_file(State(_): State<AppState>) -> AppResult<Json<Vec<Device>>> {
     let content = fs::read_to_string("src/devices.json").expect("read");
     let devices: Vec<Device> = serde_json::from_str(&content).expect("read");
-    Json(devices)
+    Ok(Json(devices))
 }
 
 async fn list_devices(State(state): State<AppState>) -> AppResult<Json<Vec<Device>>> {
@@ -221,6 +224,11 @@ async fn import_devices_ex(
     Ok((status, Json(response)))
 }
 
-pub async fn get_current() -> Result<Vec<UsbDevices>> {
-    Ok()
+pub async fn get_current(State(state): State<AppState>) -> AppResult<Json<Vec<MappedDevice>>> {
+    let connected_usb = get_current_usb().await.map_err(AppError::BadRequest)?;
+    let usb_in_db = get_devices(&state.pool).await?;
+
+    let mapped_devices = map_devices(connected_usb, usb_in_db, true)?;
+
+    Ok(Json(mapped_devices))
 }

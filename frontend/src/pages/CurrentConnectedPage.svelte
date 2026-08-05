@@ -1,7 +1,13 @@
 <script lang="ts">
   import UsbDeviceCard from "../components/UsbDeviceCard.svelte";
   import NoDevices from "../components/NoDevices.svelte";
-  let devices: any[] = [];
+  import { onMount } from "svelte";
+  import { getDevicesFromFile } from "../api/devices";
+  let devices: any[] = $state([]);
+
+  onMount(async () => {
+    devices = await getDevicesFromFile();
+  });
 </script>
 
 {#if devices.length > 0}
