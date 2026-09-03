@@ -8,6 +8,7 @@ use crate::tui::pages::connected_page::ConnectedPage;
 use crate::tui::pages::history_page::HistoryPage;
 use crate::tui::pages::loading_page::LoadingPage;
 use crate::tui::pages::not_found_page::NotFoundPage;
+use crate::tui::pages::help_page::HelpPage;
 use crate::tui::ui::Ui;
 
 pub struct App {
@@ -17,6 +18,7 @@ pub struct App {
     pub connected_page: ConnectedPage,
     pub history_page: HistoryPage,
     pub not_found_page: NotFoundPage,
+    pub help_page: HelpPage,
 }
 
 pub enum Page {
@@ -24,6 +26,7 @@ pub enum Page {
     LoadingPage,
     ConnectedPage,
     HistoryPage,
+    HelpPage
 }
 
 impl App {
@@ -34,6 +37,7 @@ impl App {
             connected_page: ConnectedPage::new(),
             history_page: HistoryPage::new(),
             not_found_page: NotFoundPage::new(),
+            help_page: HelpPage::new(),
             page: Page::ConnectedPage,
         }
     }
@@ -54,6 +58,7 @@ impl App {
             Page::NotFoundPage => self.not_found_page.handle_events(&event),
             Page::ConnectedPage => self.connected_page.handle_events(&event),
             Page::HistoryPage => self.history_page.handle_events(&event),
+            Page::HelpPage => self.help_page.handle_events(&event),
             _ => false,
         };
         if !handled {
@@ -65,6 +70,7 @@ impl App {
                         Page::ConnectedPage => self.set_page(Page::ConnectedPage),
                         Page::HistoryPage => self.set_page(Page::HistoryPage),
                         Page::LoadingPage => self.set_page(Page::LoadingPage),
+                        Page::HelpPage => self.set_page(Page::HelpPage),
                     },
                 },
                 None => {}

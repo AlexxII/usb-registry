@@ -10,7 +10,7 @@ impl HelpWidget {
     const TEXT_COLOR: Color = SLATE.c400;
 
     pub fn render(area: Rect, buffer: &mut Buffer) {
-        let text = "▲ ▼ | j/k: Перемещение, g/G: Начало/Конец, 1: Подключено, 2: История, q: Выход";
+        let text = "▲ ▼ | j/k: Перемещение, g/G: Начало/Конец, 1: Подключено, 2: История, 3: Помощь, q: Выход";
         Paragraph::new(text)
             .fg(Self::TEXT_COLOR)
             .centered()

@@ -13,6 +13,7 @@ pub fn map_event(event: Event) -> Option<AppEvent> {
             KeyCode::Char('q') => Some(AppEvent::Quit),
             KeyCode::Char('1') => Some(AppEvent::ChangePage(Page::ConnectedPage)),
             KeyCode::Char('2') => Some(AppEvent::ChangePage(Page::HistoryPage)),
+            KeyCode::Char('3') => Some(AppEvent::ChangePage(Page::HelpPage)),
             _ => None
         }
         _ => None
