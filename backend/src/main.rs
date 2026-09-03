@@ -1,14 +1,15 @@
-use std::str::FromStr;
+use std::env;
 
 use sqlx::SqlitePool;
-use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use tokio::net::TcpListener;
 
 mod api;
 mod db;
 mod errors;
 mod models;
+mod os;
 mod server;
+mod tui;
 mod usb;
 
 #[derive(Clone)]
@@ -17,40 +18,56 @@ pub struct AppState {
 }
 
 const ADDR: &str = "127.0.0.1:5151";
-const DATABASE_URL: &str = "sqlite:app.db";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
-    // TODO - read about sqlite connection options + understand what is SqliteJournalMode
-    let options = SqliteConnectOptions::from_str(DATABASE_URL)?
-        .create_if_missing(true)
-        .journal_mode(sqlx::sqlite::SqliteJournalMode::Wal);
 
-    let pool = SqlitePoolOptions::new()
-        .max_connections(5)
-        .connect_with(options)
-        .await?;
+    let db_path = os::database_path();
+    let pool = db::connect(&db_path).await?;
 
-    // TODO - check that file is there!!
-    sqlx::migrate!("./migrations").run(&pool).await?;
+    db::migrate(&pool).await?;
 
     api::auth::ensure_default_admin(&pool)
         .await
         .expect("Не удалось проверить/создать дефолтного админа");
 
+    let mode = env::args().nth(1).unwrap_or_else(|| "server".to_string());
+
+    match mode.as_str() {
+        "server" => run_server(pool).await?,
+        "tui" => tui::run_tui(pool)?,
+        _ => {
+            eprintln!("Неизвестный режим: {mode}");
+            eprintln!("Использование: usb-register [server|tui]");
+        }
+    }
+    // let state = AppState { pool };
+    //
+    // let app = server::main_router(state);
+    //
+    // let listener = TcpListener::bind(ADDR)
+    //     .await
+    //     .expect("Failed to create a TCP listener!");
+    //
+    // println!("{}", format!("Server starts on {}", ADDR));
+    //
+    // axum::serve(listener, app)
+    //     .await
+    //     .expect("Failed to start a web-server!");
+    Ok(())
+}
+
+async fn run_server(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
     let state = AppState { pool };
 
     let app = server::main_router(state);
 
-    let listener = TcpListener::bind(ADDR)
-        .await
-        .expect("Failed to create a TCP listener!");
+    let listener = TcpListener::bind(ADDR).await?;
 
-    println!("{}", format!("Server starts on {}", ADDR));
+    println!("Server starts on {ADDR}");
 
-    axum::serve(listener, app)
-        .await
-        .expect("Failed to start a web-server!");
+    axum::serve(listener, app).await?;
+
     Ok(())
 }
