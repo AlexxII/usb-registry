@@ -24,7 +24,7 @@ impl Ui {
         HelpWidget::render(help_area, frame.buffer_mut());
 
         match app.page {
-            Page::NotFoundPage => app.not_found_page.render_page(content_area, frame),
+            Page::ErrorPage => app.error_page.render_page(content_area, frame),
             Page::ConnectedPage => app.connected_page.render_page(content_area, frame),
             Page::HistoryPage => app.history_page.render_page(content_area, frame),
             Page::LoadingPage => app.loading_page.render_page(content_area, frame),

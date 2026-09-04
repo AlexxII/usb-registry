@@ -2,13 +2,15 @@ use std::io::Result;
 
 use crossterm::event::{self, Event};
 use ratatui::DefaultTerminal;
+use sqlx::SqlitePool;
 
+use crate::db::health::check_health;
 use crate::tui::events::{self, AppEvent};
 use crate::tui::pages::connected_page::ConnectedPage;
+use crate::tui::pages::help_page::HelpPage;
 use crate::tui::pages::history_page::HistoryPage;
 use crate::tui::pages::loading_page::LoadingPage;
-use crate::tui::pages::not_found_page::NotFoundPage;
-use crate::tui::pages::help_page::HelpPage;
+use crate::tui::pages::not_found_page::ErrorPage;
 use crate::tui::ui::Ui;
 
 pub struct App {
@@ -17,28 +19,32 @@ pub struct App {
     pub loading_page: LoadingPage,
     pub connected_page: ConnectedPage,
     pub history_page: HistoryPage,
-    pub not_found_page: NotFoundPage,
+    pub error_page: ErrorPage,
     pub help_page: HelpPage,
 }
 
 pub enum Page {
-    NotFoundPage,
+    ErrorPage,
     LoadingPage,
     ConnectedPage,
     HistoryPage,
-    HelpPage
+    HelpPage,
 }
 
 impl App {
-    pub fn new() -> Self {
+    pub async fn new(pool: SqlitePool) -> Self {
+        let (error_page, initial_page) = match check_health(&pool).await {
+            Ok(_) => (ErrorPage::new(None), Page::ConnectedPage),
+            Err(err) => (ErrorPage::new(Some(err)), Page::ErrorPage),
+        };
         Self {
             exit: false,
             loading_page: LoadingPage::new(),
             connected_page: ConnectedPage::new(),
             history_page: HistoryPage::new(),
-            not_found_page: NotFoundPage::new(),
+            error_page,
             help_page: HelpPage::new(),
-            page: Page::ConnectedPage,
+            page: initial_page,
         }
     }
 
@@ -55,7 +61,7 @@ impl App {
 
     fn update(&mut self, event: Event) {
         let handled = match self.page {
-            Page::NotFoundPage => self.not_found_page.handle_events(&event),
+            Page::ErrorPage => self.error_page.handle_events(&event),
             Page::ConnectedPage => self.connected_page.handle_events(&event),
             Page::HistoryPage => self.history_page.handle_events(&event),
             Page::HelpPage => self.help_page.handle_events(&event),
@@ -66,7 +72,7 @@ impl App {
                 Some(event) => match event {
                     AppEvent::Quit => self.exit(),
                     AppEvent::ChangePage(page) => match page {
-                        Page::NotFoundPage => self.set_page(Page::NotFoundPage),
+                        Page::ErrorPage => self.set_page(Page::ErrorPage),
                         Page::ConnectedPage => self.set_page(Page::ConnectedPage),
                         Page::HistoryPage => self.set_page(Page::HistoryPage),
                         Page::LoadingPage => self.set_page(Page::LoadingPage),

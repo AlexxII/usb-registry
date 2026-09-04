@@ -37,7 +37,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match mode.as_str() {
         "server" => run_server(pool).await?,
-        "tui" => tui::run_tui(pool)?,
+        "tui" => tui::run_tui(pool).await?,
         _ => {
             eprintln!("Неизвестный режим: {mode}");
             eprintln!("Использование: usb-register [server|tui]");
