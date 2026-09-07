@@ -3,14 +3,18 @@ use ratatui::Frame;
 use ratatui::layout::{Constraint, Layout, Rect};
 use ratatui::style::palette::tailwind::SLATE;
 use ratatui::style::{Color, Stylize};
+use ratatui::text::Line;
 use ratatui::widgets::{Paragraph, Widget};
 use tui_big_text::{BigText, PixelSize};
 
+use crate::tui::app::PageState;
 use crate::tui::widgets::device_info::DeviceInfo;
 use crate::tui::widgets::device_list::DeviceList;
+use crate::tui::widgets::error::ErrorWidget;
 
 pub struct ConnectedPage {
     device_list: DeviceList,
+    state: PageState,
 }
 
 impl ConnectedPage {
@@ -18,11 +22,30 @@ impl ConnectedPage {
 
     pub fn new() -> Self {
         Self {
+            state: PageState::Loading,
             device_list: DeviceList::new(),
         }
     }
 
     pub fn render_page(&mut self, area: Rect, frame: &mut Frame) {
+        match &self.state {
+            PageState::Loading => {
+                self.render_loading(area, frame);
+            }
+            PageState::Loaded => {
+                self.render_loaded(area, frame);
+            }
+            PageState::Error(error) => ErrorWidget::render(area, frame, error),
+        }
+    }
+
+    fn render_loading(&self, area: Rect, frame: &mut Frame) {
+        let [content_layout] = Layout::vertical([Constraint::Length(1)]).areas(area);
+        let content = Line::from("LOADING...").centered();
+        Widget::render(content, content_layout, frame.buffer_mut());
+    }
+
+    fn render_loaded(&mut self, area: Rect, frame: &mut Frame) {
         let page_title = BigText::builder()
             .pixel_size(PixelSize::ThirdHeight)
             .style(ratatui::style::Style::default().fg(ratatui::style::Color::Cyan))
