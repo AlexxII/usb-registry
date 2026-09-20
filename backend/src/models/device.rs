@@ -122,7 +122,6 @@ impl TryInto<DeviceUpload> for DeviceImport {
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct UsbDevice {
     pub manufacturer: String,
-    pub product: String,
     pub serial: String,
     pub filesystem: Option<String>,
     pub capacity: Option<String>,

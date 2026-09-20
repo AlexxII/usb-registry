@@ -17,7 +17,7 @@ use crate::tui::widgets::error::ErrorWidget;
 use crate::usb::current::get_current_usb_mapped;
 
 pub struct ConnectedPage {
-    device_list: DeviceList,
+    device_list: Option<DeviceList>,
     state: PageState,
     rx: Option<oneshot::Receiver<AppResult<Vec<MappedDevice>>>>,
 }
@@ -28,7 +28,7 @@ impl ConnectedPage {
     pub fn new() -> Self {
         Self {
             state: PageState::Loading,
-            device_list: DeviceList::new(),
+            device_list: None,
             rx: None,
         }
     }
@@ -52,8 +52,14 @@ impl ConnectedPage {
 
         match rx.try_recv() {
             Ok(Ok(devices)) => {
-                // self.device_list.set_items(devices);
-                self.state = PageState::Loaded;
+                if let Some(ref mut device_list) = self.device_list {
+                    device_list.set_items(devices);
+                    self.state = PageState::Loaded;
+                } else {
+                    self.state = PageState::Error(AppError::BadRequest(
+                        "Не удалось загрузить промапленые носители!".to_string(),
+                    ))
+                }
             }
 
             Ok(Err(error)) => {
@@ -90,34 +96,37 @@ impl ConnectedPage {
     }
 
     fn render_loaded(&mut self, area: Rect, frame: &mut Frame) {
-        let page_title = BigText::builder()
-            .pixel_size(PixelSize::ThirdHeight)
-            .style(ratatui::style::Style::default().fg(ratatui::style::Color::Cyan))
-            .lines(vec!["CONNECTED".into()])
-            .centered()
-            .build();
+        if let Some(ref mut device_list) = self.device_list {
+            let page_title = BigText::builder()
+                .pixel_size(PixelSize::ThirdHeight)
+                .style(ratatui::style::Style::default().fg(ratatui::style::Color::Cyan))
+                .lines(vec!["CONNECTED".into()])
+                .centered()
+                .build();
 
-        let description = Paragraph::new("Подключенные в данный момент устройства")
-            .fg(Self::TEXT_COLOR)
-            .centered();
+            let description = Paragraph::new("Подключенные в данный момент устройства")
+                .fg(Self::TEXT_COLOR)
+                .centered();
 
-        let [title_layout, desc_layout, content_layout] = Layout::vertical([
-            Constraint::Length(3),
-            Constraint::Length(1),
-            Constraint::Min(0),
-        ])
-        .areas(area);
+            let [title_layout, desc_layout, content_layout] = Layout::vertical([
+                Constraint::Length(3),
+                Constraint::Length(1),
+                Constraint::Min(0),
+            ])
+            .areas(area);
 
-        let [list_area, details_area] =
-            Layout::horizontal([Constraint::Percentage(33), Constraint::Percentage(67)])
-                .areas(content_layout);
+            let [list_area, details_area] =
+                Layout::horizontal([Constraint::Percentage(33), Constraint::Percentage(67)])
+                    .areas(content_layout);
 
-        Widget::render(page_title, title_layout, frame.buffer_mut());
-        Widget::render(description, desc_layout, frame.buffer_mut());
-        self.device_list.render_list(list_area, frame.buffer_mut());
+            Widget::render(page_title, title_layout, frame.buffer_mut());
+            Widget::render(description, desc_layout, frame.buffer_mut());
 
-        let selected_device = self.device_list.get_selected();
-        DeviceInfo::render(selected_device, details_area, frame.buffer_mut());
+            device_list.render_list(list_area, frame.buffer_mut());
+
+            let selected_device = device_list.get_selected();
+            DeviceInfo::render(selected_device, details_area, frame.buffer_mut());
+        }
     }
 
     pub fn handle_events(&mut self, event: &Event) -> bool {
@@ -129,21 +138,25 @@ impl ConnectedPage {
             return false;
         }
 
+        let Some(device_list) = &mut self.device_list else {
+            return false;
+        };
+
         match key.code {
             KeyCode::Down | KeyCode::Char('j') => {
-                self.device_list.select_next();
+                device_list.select_next();
                 return true;
             }
             KeyCode::Up | KeyCode::Char('k') => {
-                self.device_list.select_previous();
+                device_list.select_previous();
                 return true;
             }
             KeyCode::Char('G') => {
-                self.device_list.select_last();
+                device_list.select_last();
                 return true;
             }
             KeyCode::Char('g') => {
-                self.device_list.select_first();
+                device_list.select_first();
                 return true;
             }
             _ => false,

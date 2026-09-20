@@ -5,11 +5,15 @@ use ratatui::style::palette::tailwind::SLATE;
 use ratatui::text::Line;
 use ratatui::widgets::{HighlightSpacing, List, ListItem, ListState, StatefulWidget, Widget};
 
+use crate::models::device::MappedDevice;
+
+#[derive(Debug)]
 pub struct DeviceList {
     pub items: Vec<Device>,
     pub state: ListState,
 }
 
+#[derive(Debug)]
 pub struct Device {
     id: Option<i64>,
     pub manufacturer: Option<String>,
@@ -40,6 +44,10 @@ impl DeviceList {
             items: items,
             state,
         }
+    }
+
+    pub fn set_items(&mut self, devices: Vec<MappedDevice>) {
+
     }
 
     pub fn render_list(&mut self, area: Rect, buf: &mut Buffer) {

@@ -4,7 +4,7 @@ use crate::db::devices::{
     update_device,
 };
 use crate::errors::{AppError, AppResult, BatchErrorItem};
-use crate::models::device::{Device, DeviceImport, DeviceUpload, };
+use crate::models::device::{Device, DeviceImport, DeviceUpload};
 use crate::usb::current::get_current_usb_mapped_e;
 use std::{fs, usize};
 

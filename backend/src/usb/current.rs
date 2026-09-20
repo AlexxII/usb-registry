@@ -1,3 +1,4 @@
+use std::fs::File;
 use std::thread;
 use std::time::Duration;
 
@@ -12,7 +13,16 @@ use crate::models::device::{MappedDevice, UsbDevice};
 use crate::usb::utils::map_devices;
 
 pub async fn get_current_usb_from_os() -> Result<Vec<UsbDevice>, AppError> {
-    let result = vec![UsbDevice::default(); 5];
+    let file = File::open("./usb.csv")?;
+    let mut rdr = csv::ReaderBuilder::new()
+        .delimiter(b';')
+        .has_headers(false)
+        .from_reader(file);
+    let mut result = vec![];
+    for r in rdr.deserialize() {
+        let record: UsbDevice = r?;
+        result.push(record)
+    }
     Ok(result)
 }
 

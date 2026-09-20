@@ -134,4 +134,16 @@ impl From<DeviceError> for AppError {
     }
 }
 
+impl From<std::io::Error> for AppError {
+    fn from(err: std::io::Error) -> Self {
+        AppError::BadRequest(err.to_string())
+    }
+}
+
+impl From<csv::Error> for AppError {
+    fn from(err: csv::Error) -> Self {
+        AppError::BadRequest(err.to_string())
+    }
+}
+
 pub type AppResult<T> = Result<T, AppError>;
