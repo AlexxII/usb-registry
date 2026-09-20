@@ -11,6 +11,6 @@ use sqlx::SqlitePool;
 use crate::tui::app::App;
 
 pub async fn run_tui(pool: SqlitePool) -> Result<()> {
-    let mut app = App::new(pool).await;
+    let mut app = App::new(pool);
     ratatui::run(|terminal| {app.run(terminal)})
 }

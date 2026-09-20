@@ -4,7 +4,6 @@ use crossterm::event::{self, Event};
 use ratatui::DefaultTerminal;
 use sqlx::SqlitePool;
 
-use crate::db::health::check_health;
 use crate::errors::AppError;
 use crate::tui::events::{self, AppEvent};
 use crate::tui::pages::connected_page::ConnectedPage;
@@ -34,18 +33,13 @@ pub enum PageState {
 }
 
 impl App {
-    pub async fn new(pool: SqlitePool) -> Self {
-        let (tx, rx) = tokio::sync::oneshot::channel();
+    pub fn new(pool: SqlitePool) -> Self {
+        let mut connected_page = ConnectedPage::new();
+        connected_page.load(pool.clone());
 
-        let health_pool = pool.clone();
-
-        tokio::spawn(async move {
-            let result = check_health(&health_pool).await;
-            let _ = tx.send(result);
-        });
         Self {
             exit: false,
-            connected_page: ConnectedPage::new(),
+            connected_page: connected_page,
             history_page: HistoryPage::new(),
             help_page: HelpPage::new(),
             page: Page::ConnectedPage,
@@ -55,6 +49,8 @@ impl App {
     pub fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<()> {
         while !self.exit {
             terminal.draw(|frame| Ui::render(self, frame))?;
+
+            self.connected_page.poll();
 
             if event::poll(std::time::Duration::from_millis(50))? {
                 if let Ok(event) = event::read() {

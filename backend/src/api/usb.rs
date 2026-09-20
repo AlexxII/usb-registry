@@ -4,17 +4,14 @@ use crate::db::devices::{
     update_device,
 };
 use crate::errors::{AppError, AppResult, BatchErrorItem};
-use crate::models::device::{Device, DeviceImport, DeviceUpload, MappedDevice};
-use crate::usb::current::get_current_usb;
-use crate::usb::utils::map_devices;
+use crate::models::device::{Device, DeviceImport, DeviceUpload, };
+use crate::usb::current::get_current_usb_mapped_e;
 use std::{fs, usize};
 
-use axum::body::Body;
 use axum::extract::{Path, State};
-use axum::http::{StatusCode, response};
+use axum::http::StatusCode;
 use axum::routing::{delete, get, post, put};
 use axum::{Json, Router};
-use serde_json::json;
 
 pub fn router() -> Router<AppState> {
     Router::new()
@@ -29,7 +26,7 @@ pub fn router() -> Router<AppState> {
         .route("/usb/devices/{id}/force", delete(force_delet_device))
         .route("/usb/devices/{id}/destroy", put(mark_destroyed))
         .route("/usb/devices/{id}/undestroy", put(unmark_destroyed))
-        .route("/usb/current", get(get_current))
+        .route("/usb/current", get(get_current_usb_mapped_e))
     // .route("/usb/history", get(get_history))
 }
 
@@ -222,13 +219,4 @@ async fn import_devices_ex(
     };
 
     Ok((status, Json(response)))
-}
-
-pub async fn get_current(State(state): State<AppState>) -> AppResult<Json<Vec<MappedDevice>>> {
-    let connected_usb = get_current_usb().await.map_err(AppError::BadRequest)?;
-    let usb_in_db = get_devices(&state.pool).await?;
-
-    let mapped_devices = map_devices(connected_usb, usb_in_db, true)?;
-
-    Ok(Json(mapped_devices))
 }

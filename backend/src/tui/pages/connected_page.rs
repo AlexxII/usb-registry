@@ -5,16 +5,21 @@ use ratatui::style::palette::tailwind::SLATE;
 use ratatui::style::{Color, Stylize};
 use ratatui::text::Line;
 use ratatui::widgets::{Paragraph, Widget};
+use tokio::sync::oneshot;
 use tui_big_text::{BigText, PixelSize};
 
+use crate::errors::{AppError, AppResult};
+use crate::models::device::MappedDevice;
 use crate::tui::app::PageState;
 use crate::tui::widgets::device_info::DeviceInfo;
 use crate::tui::widgets::device_list::DeviceList;
 use crate::tui::widgets::error::ErrorWidget;
+use crate::usb::current::get_current_usb_mapped;
 
 pub struct ConnectedPage {
     device_list: DeviceList,
     state: PageState,
+    rx: Option<oneshot::Receiver<AppResult<Vec<MappedDevice>>>>,
 }
 
 impl ConnectedPage {
@@ -24,6 +29,45 @@ impl ConnectedPage {
         Self {
             state: PageState::Loading,
             device_list: DeviceList::new(),
+            rx: None,
+        }
+    }
+
+    pub fn load(&mut self, pool: sqlx::SqlitePool) {
+        let (tx, rx) = oneshot::channel();
+
+        self.rx = Some(rx);
+        self.state = PageState::Loading;
+
+        tokio::spawn(async move {
+            let result = get_current_usb_mapped(&pool).await;
+            let _ = tx.send(result);
+        });
+    }
+
+    pub fn poll(&mut self) {
+        let Some(mut rx) = self.rx.take() else {
+            return;
+        };
+
+        match rx.try_recv() {
+            Ok(Ok(devices)) => {
+                // self.device_list.set_items(devices);
+                self.state = PageState::Loaded;
+            }
+
+            Ok(Err(error)) => {
+                self.state = PageState::Error(error);
+            }
+
+            Err(oneshot::error::TryRecvError::Empty) => {
+                self.rx = Some(rx);
+            }
+
+            Err(oneshot::error::TryRecvError::Closed) => {
+                self.state =
+                    PageState::Error(AppError::BadRequest("Загрузка устройств прервана".into()));
+            }
         }
     }
 
@@ -41,7 +85,7 @@ impl ConnectedPage {
 
     fn render_loading(&self, area: Rect, frame: &mut Frame) {
         let [content_layout] = Layout::vertical([Constraint::Length(1)]).areas(area);
-        let content = Line::from("LOADING...").centered();
+        let content = Line::from("ЗАГРУЗКА...").centered();
         Widget::render(content, content_layout, frame.buffer_mut());
     }
 
