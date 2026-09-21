@@ -6,7 +6,6 @@ use ratatui::style::{Color, Stylize};
 use ratatui::text::Line;
 use ratatui::widgets::{Paragraph, Widget};
 use tokio::sync::oneshot;
-use tui_big_text::{BigText, PixelSize};
 
 use crate::errors::{AppError, AppResult};
 use crate::font::create_big_text;
@@ -98,13 +97,8 @@ impl ConnectedPage {
 
     fn render_loaded(&mut self, area: Rect, frame: &mut Frame) {
         if let Some(ref mut device_list) = self.device_list {
-            // let page_title = BigText::builder()
-            //     .pixel_size(PixelSize::ThirdHeight)
-            //     .style(ratatui::style::Style::default().fg(ratatui::style::Color::Cyan))
-            //     .lines(vec!["CONNECTED".into()])
-            //     .centered()
-            //     .build();
-            let page_text = create_big_text("СОЕДИНЕН", Color::Cyan);
+
+            let page_text = create_big_text("АКТИВНЫЕ", Color::Cyan);
             let page_title = Paragraph::new(page_text).alignment(Alignment::Center);
 
             let description = Paragraph::new("Подключенные в данный момент устройства")

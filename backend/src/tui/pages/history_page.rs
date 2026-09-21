@@ -5,7 +5,6 @@ use ratatui::style::palette::tailwind::SLATE;
 use ratatui::style::{Color, Stylize};
 use ratatui::text::Line;
 use ratatui::widgets::{Paragraph, Widget};
-use tui_big_text::{BigText, PixelSize};
 
 use crate::font::create_big_text;
 
@@ -21,13 +20,6 @@ impl HistoryPage {
     pub fn render_page(&self, area: Rect, frame: &mut Frame) {
         let page_text = create_big_text("ИСТОРИЯ", Color::Cyan);
         let page_title = Paragraph::new(page_text).alignment(Alignment::Center);
-
-        // let page_title = BigText::builder()
-        //     .pixel_size(PixelSize::ThirdHeight)
-        //     .style(ratatui::style::Style::default().fg(ratatui::style::Color::Cyan))
-        //     .lines(vec!["HISTORY".into()])
-        //     .centered()
-        //     .build();
 
         let description = Paragraph::new("История подключений")
             .fg(Self::TEXT_COLOR)

@@ -6,8 +6,6 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Paragraph, Widget, Wrap},
 };
-use tui_big_text::{BigText, PixelSize};
-
 use crate::font::create_big_text;
 
 pub struct HelpPage;
@@ -20,17 +18,8 @@ impl HelpPage {
     }
 
     pub fn render_page(&self, area: Rect, frame: &mut Frame) {
-        // 1. Создаем рамку для страницы помощи
-        //
         let page_text = create_big_text("ПОМОЩЬ", Color::Cyan);
         let page_title = Paragraph::new(page_text).alignment(Alignment::Center);
-
-        // let page_title = BigText::builder()
-        //     .pixel_size(PixelSize::ThirdHeight)
-        //     .style(ratatui::style::Style::default().fg(ratatui::style::Color::Cyan))
-        //     .lines(vec!["HELP".into()])
-        //     .centered()
-        //     .build();
 
         let description = Paragraph::new("ПОМОЩЬ! Прочтите внимательно!")
             .fg(Self::TEXT_COLOR)
@@ -43,7 +32,6 @@ impl HelpPage {
         ])
         .areas(area);
 
-        // 2. Формируем текст с подсветкой важных элементов
         let text = vec![
             Line::from(""), // Пустая строка для отступа сверху
             Line::from(vec![Span::raw(

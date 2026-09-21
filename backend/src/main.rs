@@ -13,6 +13,7 @@ mod server;
 mod tui;
 mod usb;
 mod font;
+mod font_ex;
 
 #[derive(Clone)]
 pub struct AppState {
