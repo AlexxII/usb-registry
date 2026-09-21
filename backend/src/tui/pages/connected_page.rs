@@ -52,8 +52,8 @@ impl ConnectedPage {
 
         match rx.try_recv() {
             Ok(Ok(devices)) => {
-                if let Some(ref mut device_list) = self.device_list {
-                    device_list.set_items(devices);
+                if !devices.is_empty() {
+                    self.device_list = Some(DeviceList::new(devices));
                     self.state = PageState::Loaded;
                 } else {
                     self.state = PageState::Error(AppError::BadRequest(

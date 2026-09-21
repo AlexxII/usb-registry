@@ -3,7 +3,7 @@ use ratatui::layout::Rect;
 use ratatui::style::Color;
 use ratatui::style::palette::tailwind::SLATE;
 use ratatui::text::Line;
-use ratatui::widgets::{HighlightSpacing, List, ListItem, ListState, StatefulWidget, Widget};
+use ratatui::widgets::{HighlightSpacing, List, ListItem, ListState, StatefulWidget};
 
 use crate::models::device::MappedDevice;
 
@@ -26,15 +26,20 @@ const NORMAL_ROW_BG: Color = SLATE.c950;
 const TEXT_FG_COLOR: Color = SLATE.c200;
 
 impl DeviceList {
-    pub fn new() -> Self {
-        let items: Vec<Device> = [
-            (1_u8, "ADATA", "1234124HJSDJ", "NTFS", 16_u8),
-            (2_u8, "Kingston", "GHJER234234FB", "ext4", 32_u8),
-            (3_u8, "Maxtor", "234823748", "FAT32", 4_u8),
-        ]
-        .into_iter()
-        .map(|(id, man, sn, fs, cap)| Device::new(id, man, sn, fs, cap))
-        .collect();
+    pub fn new(devices: Vec<MappedDevice>) -> Self {
+        let items: Vec<Device> = devices
+            .into_iter()
+            .map(|device| {
+                Device::new(
+                    device.id,
+                    device.manufacturer,
+                    device.serial,
+                    device.filesystem,
+                    device.capacity,
+                )
+            })
+            .collect();
+
         let mut state = ListState::default();
         if !items.is_empty() {
             state.select(Some(0));
@@ -44,10 +49,6 @@ impl DeviceList {
             items: items,
             state,
         }
-    }
-
-    pub fn set_items(&mut self, devices: Vec<MappedDevice>) {
-
     }
 
     pub fn render_list(&mut self, area: Rect, buf: &mut Buffer) {
@@ -96,13 +97,20 @@ impl DeviceList {
 }
 
 impl Device {
-    fn new(id: u8, man: &str, sn: &str, fs: &str, cap: u8) -> Self {
+    fn new(
+        id: Option<i64>,
+        man: Option<String>,
+        sn: Option<String>,
+        fs: Option<String>,
+        cap: Option<String>,
+    ) -> Self {
         Self {
-            id: Some(id as i64),
-            manufacturer: Some(man.to_string()),
-            serial: Some(sn.to_string()),
-            filesystem: Some(fs.to_string()),
-            capacity: Some(format!("{} GB", cap)),
+            id,
+            manufacturer: man,
+            serial: sn,
+            filesystem: fs,
+            // capacity: Some(format!("{} GB", cap)),
+            capacity: cap
         }
     }
 }

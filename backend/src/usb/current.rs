@@ -27,7 +27,7 @@ pub async fn get_current_usb_from_os() -> Result<Vec<UsbDevice>, AppError> {
 }
 
 pub async fn get_current_usb_mapped(pool: &SqlitePool) -> Result<Vec<MappedDevice>, AppError> {
-    thread::sleep(Duration::from_millis(1900));
+    thread::sleep(Duration::from_millis(500));
 
     let connected_usb = get_current_usb_from_os().await?;
     let usb_in_db = get_devices(&pool).await?;
