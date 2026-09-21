@@ -1,6 +1,6 @@
 use crossterm::event::{Event, KeyCode};
 use ratatui::Frame;
-use ratatui::layout::{Constraint, Layout, Rect};
+use ratatui::layout::{Alignment, Constraint, Layout, Rect};
 use ratatui::style::palette::tailwind::SLATE;
 use ratatui::style::{Color, Stylize};
 use ratatui::text::Line;
@@ -9,6 +9,7 @@ use tokio::sync::oneshot;
 use tui_big_text::{BigText, PixelSize};
 
 use crate::errors::{AppError, AppResult};
+use crate::font::create_big_text;
 use crate::models::device::MappedDevice;
 use crate::tui::app::PageState;
 use crate::tui::widgets::device_info::DeviceInfo;
@@ -57,7 +58,7 @@ impl ConnectedPage {
                     self.state = PageState::Loaded;
                 } else {
                     self.state = PageState::Error(AppError::BadRequest(
-                        "Не удалось загрузить промапленые носители!".to_string(),
+                        "Не удалось загрузить промапленные носители!".to_string(),
                     ))
                 }
             }
@@ -97,19 +98,21 @@ impl ConnectedPage {
 
     fn render_loaded(&mut self, area: Rect, frame: &mut Frame) {
         if let Some(ref mut device_list) = self.device_list {
-            let page_title = BigText::builder()
-                .pixel_size(PixelSize::ThirdHeight)
-                .style(ratatui::style::Style::default().fg(ratatui::style::Color::Cyan))
-                .lines(vec!["CONNECTED".into()])
-                .centered()
-                .build();
+            // let page_title = BigText::builder()
+            //     .pixel_size(PixelSize::ThirdHeight)
+            //     .style(ratatui::style::Style::default().fg(ratatui::style::Color::Cyan))
+            //     .lines(vec!["CONNECTED".into()])
+            //     .centered()
+            //     .build();
+            let page_text = create_big_text("СОЕДИНЕН", Color::Cyan);
+            let page_title = Paragraph::new(page_text).alignment(Alignment::Center);
 
             let description = Paragraph::new("Подключенные в данный момент устройства")
                 .fg(Self::TEXT_COLOR)
                 .centered();
 
             let [title_layout, desc_layout, content_layout] = Layout::vertical([
-                Constraint::Length(3),
+                Constraint::Length(6),
                 Constraint::Length(1),
                 Constraint::Min(0),
             ])

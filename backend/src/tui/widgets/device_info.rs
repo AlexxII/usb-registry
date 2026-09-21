@@ -3,13 +3,12 @@ use ratatui::layout::Rect;
 use ratatui::text::Line;
 use ratatui::widgets::{Block, Borders, Paragraph, Widget};
 
-use super::device_list::Device;
+use crate::models::device::MappedDevice;
 
 pub struct DeviceInfo;
 
 impl DeviceInfo {
-    pub fn render(device: Option<&Device>, area: Rect, buf: &mut Buffer) {
-        // Если ничего не выбрано, выводим заглушку
+    pub fn render(device: Option<&MappedDevice>, area: Rect, buf: &mut Buffer) {
         let Some(dev) = device else {
             let placeholder = Paragraph::new("Выберите устройство для просмотра деталей...")
                 .alignment(ratatui::layout::Alignment::Center);
@@ -32,6 +31,15 @@ impl DeviceInfo {
                 dev.filesystem.as_deref().unwrap_or("-")
             )),
             Line::from(format!("Объем: {}", dev.capacity.as_deref().unwrap_or("-"))),
+            Line::from(format!("Зарегистрирован: {}", dev.registered)),
+            Line::from(format!(
+                "Рег.№: {}",
+                dev.register_number.as_deref().unwrap_or("-")
+            )),
+            Line::from(format!("Владелец: {}", dev.owner.as_deref().unwrap_or("-"))),
+            Line::from(format!("Заключение о СП: {}", dev.conclusion_number.as_deref().unwrap_or("-"))),
+            Line::from(format!("Предписание: {}", dev.prescription.as_deref().unwrap_or("-"))),
+            Line::from(format!("Гриф секретности: {}", dev.secclass.as_deref().unwrap_or("-"))),
         ];
 
         let block = Block::default()

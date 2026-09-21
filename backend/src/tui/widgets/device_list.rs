@@ -9,7 +9,8 @@ use crate::models::device::MappedDevice;
 
 #[derive(Debug)]
 pub struct DeviceList {
-    pub items: Vec<Device>,
+    // pub items: Vec<Device>,
+    pub items: Vec<MappedDevice>,
     pub state: ListState,
 }
 
@@ -20,6 +21,7 @@ pub struct Device {
     pub serial: Option<String>,
     pub filesystem: Option<String>,
     pub capacity: Option<String>,
+    pub register: bool,
 }
 
 const NORMAL_ROW_BG: Color = SLATE.c950;
@@ -27,18 +29,20 @@ const TEXT_FG_COLOR: Color = SLATE.c200;
 
 impl DeviceList {
     pub fn new(devices: Vec<MappedDevice>) -> Self {
-        let items: Vec<Device> = devices
-            .into_iter()
-            .map(|device| {
-                Device::new(
-                    device.id,
-                    device.manufacturer,
-                    device.serial,
-                    device.filesystem,
-                    device.capacity,
-                )
-            })
-            .collect();
+        let items = devices;
+        // let items: Vec<Device> = devices
+        //     .into_iter()
+        //     .map(|device| {
+        //         Device::new(
+        //             device.id,
+        //             device.manufacturer,
+        //             device.serial,
+        //             device.filesystem,
+        //             device.capacity,
+        //             device.registered
+        //         )
+        //     })
+        //     .collect();
 
         let mut state = ListState::default();
         if !items.is_empty() {
@@ -77,7 +81,7 @@ impl DeviceList {
         }
     }
 
-    pub fn get_selected(&self) -> Option<&Device> {
+    pub fn get_selected(&self) -> Option<&MappedDevice> {
         self.state.selected().and_then(|idx| self.items.get(idx))
     }
 
@@ -103,6 +107,7 @@ impl Device {
         sn: Option<String>,
         fs: Option<String>,
         cap: Option<String>,
+        reg: bool,
     ) -> Self {
         Self {
             id,
@@ -110,13 +115,24 @@ impl Device {
             serial: sn,
             filesystem: fs,
             // capacity: Some(format!("{} GB", cap)),
-            capacity: cap
+            capacity: cap,
+            register: reg,
         }
     }
 }
 
 impl From<&Device> for ListItem<'_> {
     fn from(value: &Device) -> Self {
+        let line = match &value.manufacturer {
+            Some(man) => Line::styled(format!("{}", man.clone()), TEXT_FG_COLOR),
+            None => Line::styled("UNKNOWN".to_string(), TEXT_FG_COLOR),
+        };
+        ListItem::new(line)
+    }
+}
+
+impl From<&MappedDevice> for ListItem<'_> {
+    fn from(value: &MappedDevice) -> Self {
         let line = match &value.manufacturer {
             Some(man) => Line::styled(format!("{}", man.clone()), TEXT_FG_COLOR),
             None => Line::styled("UNKNOWN".to_string(), TEXT_FG_COLOR),
