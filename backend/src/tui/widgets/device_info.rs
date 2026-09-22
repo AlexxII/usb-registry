@@ -31,7 +31,10 @@ impl DeviceInfo {
 }
 
 fn device_info(dev: &MappedDevice) -> Vec<Line<'static>> {
-    let register = is_register(dev);
+    let register_info = register_info(dev);
+    let special_dev = is_special(dev);
+    let internet = is_internet(dev);
+    let max_secclas = show_maxsecclass(dev);
     let mut lines = vec![
         Line::from(format!(
             "Производитель: {}",
@@ -46,39 +49,89 @@ fn device_info(dev: &MappedDevice) -> Vec<Line<'static>> {
             dev.filesystem.as_deref().unwrap_or("-")
         )),
         Line::from(format!("Объем: {}", dev.capacity.as_deref().unwrap_or("-"))),
-        register,
-        Line::from(format!(
-            "Рег.№: {}",
-            dev.register_number.as_deref().unwrap_or("-")
-        )),
-        Line::from(format!("Владелец: {}", dev.owner.as_deref().unwrap_or("-"))),
-        Line::from(format!(
-            "Заключение о СП: {}",
-            dev.conclusion_number.as_deref().unwrap_or("-")
-        )),
-        Line::from(format!(
-            "Предписание: {}",
-            dev.prescription.as_deref().unwrap_or("-")
-        )),
-        Line::from(format!(
-            "Гриф секретности: {}",
-            dev.secclass.as_deref().unwrap_or("-")
-        )),
     ];
+
+    if dev.registered & dev.secret {
+        lines.extend(register_info);
+        lines.extend(special_dev);
+        lines.extend(max_secclas);
+        if dev.destroyed {
+            lines.push(Line::from("Носитель УНИЧТОЖЕН").style(Color::Red))
+        }
+    } else if dev.registered & !dev.secret {
+        lines.extend(internet);
+    } else {
+        lines.push(
+            Line::from("УСТРОЙСТВО не ЗАРЕГИСТРИРОВАНО!")
+                .style(Color::Red)
+                .bold(),
+        );
+    }
 
     lines
 }
 
-fn is_register(dev: &MappedDevice) -> Line<'static> {
+fn register_info(dev: &MappedDevice) -> Vec<Line<'static>> {
     if dev.registered {
-        return Line::from("ЗАРЕГИСТРИРОВАН").style(Color::Green).bold();
+        return vec![
+            Line::from("ЗАРЕГИСТРИРОВАН").style(Color::Green).bold(),
+            Line::from(format!(
+                "Рег.№: {}",
+                dev.register_number.as_deref().unwrap_or("-")
+            )),
+            Line::from(format!("Владелец: {}", dev.owner.as_deref().unwrap_or("-"))),
+            Line::from(format!(
+                "Заключение о СП: {}",
+                dev.conclusion_number.as_deref().unwrap_or("-")
+            )),
+            Line::from(format!(
+                "Предписание: {}",
+                dev.prescription.as_deref().unwrap_or("-")
+            )),
+            Line::from(format!(
+                "Гриф секретности: {}",
+                dev.secclass.as_deref().unwrap_or("-")
+            )),
+            Line::from(format!("Зоны: {}", dev.zones.as_deref().unwrap_or("-"))),
+        ];
     } else {
-        return Line::from("УСТРОЙСТВО не ЗАРЕГИСТРИРОВАНО!")
-            .style(Color::Red)
-            .bold();
+        vec![]
     }
 }
 
-// fn is_secret(dev: &MappedDevice) -> Line<'static> {
-//     if dev.secret {}
-// }
+fn is_special(dev: &MappedDevice) -> Vec<Line<'static>> {
+    if dev.special {
+        vec![
+            Line::from("СПЕЦИАЛЬНОЕ ДЕЛОПРОИЗВОДСТВО")
+                .style(Color::Red)
+                .bold(),
+            Line::from(
+                "если ваш диск не зарегистрирован на участке СПЕЦИАЛЬНОГО делопроизводства - Вы попали!",
+            ),
+        ]
+    } else {
+        vec![]
+    }
+}
+
+fn is_internet(dev: &MappedDevice) -> Vec<Line<'static>> {
+    if !dev.secret {
+        vec![
+            Line::from("ДЛЯ АП ИНТЕРНЕТ").style(Color::Red).bold(),
+            Line::from("Если вы сидите за ОВТ и видите это сообщение - Вы попали!"),
+        ]
+    } else {
+        vec![]
+    }
+}
+
+fn show_maxsecclass(dev: &MappedDevice) -> Vec<Line<'static>> {
+    vec![
+        Line::from(format!(
+            "Максимальный гриф секретности: {}",
+            dev.max_secclass.as_deref().unwrap_or("-")
+        ))
+        .style(Color::Red)
+        .bold(),
+    ]
+}
