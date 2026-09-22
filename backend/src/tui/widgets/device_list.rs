@@ -9,19 +9,8 @@ use crate::models::device::MappedDevice;
 
 #[derive(Debug)]
 pub struct DeviceList {
-    // pub items: Vec<Device>,
     pub items: Vec<MappedDevice>,
     pub state: ListState,
-}
-
-#[derive(Debug)]
-pub struct Device {
-    id: Option<i64>,
-    pub manufacturer: Option<String>,
-    pub serial: Option<String>,
-    pub filesystem: Option<String>,
-    pub capacity: Option<String>,
-    pub register: bool,
 }
 
 const NORMAL_ROW_BG: Color = SLATE.c950;
@@ -30,19 +19,6 @@ const TEXT_FG_COLOR: Color = SLATE.c200;
 impl DeviceList {
     pub fn new(devices: Vec<MappedDevice>) -> Self {
         let items = devices;
-        // let items: Vec<Device> = devices
-        //     .into_iter()
-        //     .map(|device| {
-        //         Device::new(
-        //             device.id,
-        //             device.manufacturer,
-        //             device.serial,
-        //             device.filesystem,
-        //             device.capacity,
-        //             device.registered
-        //         )
-        //     })
-        //     .collect();
 
         let mut state = ListState::default();
         if !items.is_empty() {
@@ -97,37 +73,6 @@ impl DeviceList {
 
     pub fn select_last(&mut self) {
         self.state.select_last();
-    }
-}
-
-impl Device {
-    fn new(
-        id: Option<i64>,
-        man: Option<String>,
-        sn: Option<String>,
-        fs: Option<String>,
-        cap: Option<String>,
-        reg: bool,
-    ) -> Self {
-        Self {
-            id,
-            manufacturer: man,
-            serial: sn,
-            filesystem: fs,
-            // capacity: Some(format!("{} GB", cap)),
-            capacity: cap,
-            register: reg,
-        }
-    }
-}
-
-impl From<&Device> for ListItem<'_> {
-    fn from(value: &Device) -> Self {
-        let line = match &value.manufacturer {
-            Some(man) => Line::styled(format!("{}", man.clone()), TEXT_FG_COLOR),
-            None => Line::styled("UNKNOWN".to_string(), TEXT_FG_COLOR),
-        };
-        ListItem::new(line)
     }
 }
 

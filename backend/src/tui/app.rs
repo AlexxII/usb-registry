@@ -37,10 +37,13 @@ impl App {
         let mut connected_page = ConnectedPage::new();
         connected_page.load(pool.clone());
 
+        let mut history_page = HistoryPage::new();
+        history_page.load(pool.clone());
+
         Self {
             exit: false,
             connected_page: connected_page,
-            history_page: HistoryPage::new(),
+            history_page: history_page,
             help_page: HelpPage::new(),
             page: Page::ConnectedPage,
         }
@@ -51,6 +54,7 @@ impl App {
             terminal.draw(|frame| Ui::render(self, frame))?;
 
             self.connected_page.poll();
+            self.history_page.poll();
 
             if event::poll(std::time::Duration::from_millis(50))? {
                 if let Ok(event) = event::read() {
