@@ -9,10 +9,10 @@ pub mod devices;
 pub mod health;
 pub mod settings;
 
-pub async fn connect(path: &Path) -> Result<SqlitePool, sqlx::Error> {
+pub async fn connect(path: &Path, create_if_missing: bool) -> Result<SqlitePool, sqlx::Error> {
     let options = SqliteConnectOptions::new()
         .filename(path)
-        .create_if_missing(true)
+        .create_if_missing(create_if_missing)
         .journal_mode(SqliteJournalMode::Wal);
 
     SqlitePoolOptions::new()

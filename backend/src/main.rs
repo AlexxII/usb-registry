@@ -7,13 +7,13 @@ use tokio::net::TcpListener;
 mod api;
 mod db;
 mod errors;
+mod font;
+mod font_ex;
 mod models;
 mod os;
 mod server;
 mod tui;
 mod usb;
-mod font;
-mod font_ex;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -26,23 +26,48 @@ const ADDR: &str = "127.0.0.1:5151";
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
+    let args: Vec<String> = env::args().skip(1).collect();
+    let should_init = args.iter().any(|arg| arg == "--init" || arg == "-i");
+
+    let mode = args
+        .iter()
+        .find(|arg| !arg.starts_with('-'))
+        .map(|s| s.as_str())
+        .unwrap_or("tui");
+
     let db_path = os::database_path();
-    let pool = db::connect(&db_path).await?;
 
-    db::migrate(&pool).await?;
+    // 1. Подключаемся. База создается ТОЛЬКО если был передан флаг `--init`
+    let pool = match db::connect(&db_path, should_init).await {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("Ошибка подключения к БД: {e}");
+            eprintln!(
+                "Возможно, база данных не создана. Используйте флаг `--init`, чтобы инициализировать приложение:"
+            );
+            eprintln!("  usb-register --init {mode}");
+            std::process::exit(1);
+        }
+    };
 
-    api::auth::ensure_default_admin(&pool)
-        .await
-        .expect("Не удалось проверить/создать дефолтного админа");
+    if should_init {
+        println!("Инициализация базы данных и запуск миграций...");
+        db::migrate(&pool).await?;
+        api::auth::ensure_default_admin(&pool)
+            .await
+            .expect("Не удалось проверить/создать дефолтного админа");
 
-    let mode = env::args().nth(1).unwrap_or_else(|| "tui".to_string());
-
-    match mode.as_str() {
+        if args.len() == 1 && should_init {
+            println!("База данных успешно инициализирована!");
+            return Ok(());
+        }
+    }
+    match mode {
         "server" => run_server(pool).await?,
         "tui" => tui::run_tui(pool).await?,
         _ => {
             eprintln!("Неизвестный режим: {mode}");
-            eprintln!("Использование: usb-register [server|tui]");
+            eprintln!("Использование: usb-register [--init] [server|tui]");
         }
     }
     Ok(())

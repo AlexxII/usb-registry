@@ -1,3 +1,4 @@
+use crate::font::create_big_text;
 use crossterm::event::Event;
 use ratatui::{
     Frame,
@@ -6,7 +7,6 @@ use ratatui::{
     text::{Line, Span},
     widgets::{Paragraph, Widget, Wrap},
 };
-use crate::font::create_big_text;
 
 pub struct HelpPage;
 
@@ -33,6 +33,17 @@ impl HelpPage {
         .areas(area);
 
         let text = vec![
+            Line::from(""), // Пустая строка для отступа сверху
+            Line::from(vec![
+                Span::raw("При первичной инициализации используйте аргумент: "),
+                Span::styled(
+                    "init",
+                    Style::default()
+                        .fg(Color::Green)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::raw("."),
+            ]),
             Line::from(""), // Пустая строка для отступа сверху
             Line::from(vec![Span::raw(
                 "Для сыночек-корзиночек и девочек-припевочек предусмотрен WEB-интерфейс. ",
