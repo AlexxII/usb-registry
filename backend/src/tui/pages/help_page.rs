@@ -34,19 +34,8 @@ impl HelpPage {
 
         let text = vec![
             Line::from(""), // Пустая строка для отступа сверху
-            Line::from(vec![
-                Span::raw("При первичной инициализации используйте аргумент: "),
-                Span::styled(
-                    "init",
-                    Style::default()
-                        .fg(Color::Green)
-                        .add_modifier(Modifier::BOLD),
-                ),
-                Span::raw("."),
-            ]),
-            Line::from(""), // Пустая строка для отступа сверху
             Line::from(vec![Span::raw(
-                "Для сыночек-корзиночек и девочек-припевочек предусмотрен WEB-интерфейс. ",
+                "Для сыночек-корзиночек и девочек-припевочек предусмотрен WEB-интерфейс. Нужно запусить приложение в качестве Web-сервера",
             )]),
             Line::from(""),
             Line::from(vec![
@@ -59,7 +48,6 @@ impl HelpPage {
                 ),
                 Span::raw("."),
             ]),
-            Line::from(""),
             Line::from(vec![
                 Span::raw("Пример команды: "),
                 Span::styled(
@@ -73,7 +61,30 @@ impl HelpPage {
             Line::from(vec![Span::raw(
                 " Далее используйте web-браузер Chrome, Safari или Mozilla. Браузеры компании МелкоМягкие не поддерживаются, мне очень жаль.",
             )]),
-            Line::from(""),
+            Line::from(""), // Пустая строка для отступа сверху
+            Line::from(vec![
+                Span::styled(
+                    "ВАЖНО! ",
+                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                ),
+                Span::raw("Только при первичной инициализации используйте аргумент: "),
+                Span::styled(
+                    "init",
+                    Style::default()
+                        .fg(Color::Green)
+                        .add_modifier(Modifier::BOLD),
+                ),
+                Span::raw("."),
+            ]),
+            Line::from(vec![
+                Span::raw("Пример команды: "),
+                Span::styled(
+                    "cargo run -- init",
+                    Style::default()
+                        .fg(Color::Magenta)
+                        .add_modifier(Modifier::ITALIC),
+                ),
+            ]),
         ];
 
         let paragraph = Paragraph::new(text)
