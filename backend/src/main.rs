@@ -91,15 +91,6 @@ async fn run_server(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> 
     Ok(())
 }
 
-fn show_cmd_error(e: Error) {
-    eprintln!("Ошибка подключения к БД: {e}");
-    eprintln!(
-        "База данных должна лежать рядом с приложением. Возможно, база данных не создана. Используйте флаг `--init`, 
-        чтобы инициализировать приложение:"
-    );
-    eprintln!("  usb-register --init [server|tui]");
-}
-
 fn clear_screen() {
     if cfg!(target_os = "windows") {
         Command::new("cmd").args(["/C", "cls"]).status().unwrap();
