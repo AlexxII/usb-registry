@@ -1,7 +1,7 @@
 use std::env;
 use std::process::Command;
 
-use sqlx::SqlitePool;
+use sqlx::{Error, SqlitePool};
 use tokio::net::TcpListener;
 
 mod api;
@@ -39,37 +39,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 1. Подключаемся. База создается ТОЛЬКО если был передан флаг `--init`
     let pool = match db::connect(&db_path, should_init).await {
-        Ok(p) => p,
-        Err(e) => {
-            eprintln!("Ошибка подключения к БД: {e}");
-            eprintln!(
-                "Возможно, база данных не создана. Используйте флаг `--init`, чтобы инициализировать приложение:"
-            );
-            eprintln!("  usb-register --init {mode}");
-            std::process::exit(1);
-        }
+        Ok(p) => Ok(p),
+        Err(e) => Err(e),
     };
 
-    if should_init {
-        println!("Инициализация базы данных и запуск миграций...");
-        db::migrate(&pool).await?;
-        api::auth::ensure_default_admin(&pool)
-            .await
-            .expect("Не удалось проверить/создать дефолтного админа");
+    match pool {
+        Ok(pool) => {
+            if should_init {
+                println!("Инициализация базы данных и запуск миграций...");
+                db::migrate(&pool).await?;
+                api::auth::ensure_default_admin(&pool)
+                    .await
+                    .expect("Не удалось проверить/создать дефолтного админа");
 
-        if args.len() == 1 && should_init {
-            println!("База данных успешно инициализирована!");
-            return Ok(());
+                if args.len() == 1 && should_init {
+                    println!("База данных успешно инициализирована!");
+                    return Ok(());
+                }
+            }
+            match mode {
+                "server" => run_server(pool).await?,
+                "tui" => tui::run_tui(pool).await?,
+                _ => {
+                    eprintln!("Неизвестный режим: {mode}");
+                    eprintln!("Использование: usb-register [--init] [server|tui]");
+                }
+            }
+        }
+        Err(e) => {
+            tui::run_tui_error(e).await?;
         }
     }
-    match mode {
-        "server" => run_server(pool).await?,
-        "tui" => tui::run_tui(pool).await?,
-        _ => {
-            eprintln!("Неизвестный режим: {mode}");
-            eprintln!("Использование: usb-register [--init] [server|tui]");
-        }
-    }
+
     Ok(())
 }
 
@@ -88,6 +89,15 @@ async fn run_server(pool: SqlitePool) -> Result<(), Box<dyn std::error::Error>> 
     axum::serve(listener, app).await?;
 
     Ok(())
+}
+
+fn show_cmd_error(e: Error) {
+    eprintln!("Ошибка подключения к БД: {e}");
+    eprintln!(
+        "База данных должна лежать рядом с приложением. Возможно, база данных не создана. Используйте флаг `--init`, 
+        чтобы инициализировать приложение:"
+    );
+    eprintln!("  usb-register --init [server|tui]");
 }
 
 fn clear_screen() {

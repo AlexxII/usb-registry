@@ -59,7 +59,6 @@ impl ErrorWidget {
             )),
         ];
 
-        // Создаем виджет параграфа с центрированием текста
         let paragraph = Paragraph::new(text)
             .block(block)
             .wrap(Wrap { trim: true })
