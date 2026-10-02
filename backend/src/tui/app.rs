@@ -11,11 +11,14 @@ use crate::tui::pages::help_page::HelpPage;
 use crate::tui::pages::history_page::HistoryPage;
 use crate::tui::ui::Ui;
 
+use super::pages::registry::RegistryPage;
+
 pub struct App {
     pub exit: bool,
     pub page: Page,
     pub connected_page: ConnectedPage,
     pub history_page: HistoryPage,
+    pub registry_page: RegistryPage,
     pub help_page: HelpPage,
 }
 
@@ -23,6 +26,7 @@ pub struct App {
 pub enum Page {
     ConnectedPage,
     HistoryPage,
+    RegistryPage,
     HelpPage,
 }
 
@@ -40,10 +44,14 @@ impl App {
         let mut history_page = HistoryPage::new();
         history_page.load(pool.clone());
 
+        let mut registry_page = RegistryPage::new();
+        registry_page.load(pool.clone());
+
         Self {
             exit: false,
             connected_page: connected_page,
             history_page: history_page,
+            registry_page: registry_page,
             help_page: HelpPage::new(),
             page: Page::ConnectedPage,
         }
@@ -55,6 +63,7 @@ impl App {
 
             self.connected_page.poll();
             self.history_page.poll();
+            self.registry_page.poll();
 
             if event::poll(std::time::Duration::from_millis(50))? {
                 if let Ok(event) = event::read() {
@@ -70,6 +79,7 @@ impl App {
         let handled = match self.page {
             Page::ConnectedPage => self.connected_page.handle_events(&event),
             Page::HistoryPage => self.history_page.handle_events(&event),
+            Page::RegistryPage => self.registry_page.handle_events(&event),
             Page::HelpPage => self.help_page.handle_events(&event),
             _ => false,
         };
@@ -80,6 +90,7 @@ impl App {
                     AppEvent::ChangePage(page) => match page {
                         Page::ConnectedPage => self.set_page(Page::ConnectedPage),
                         Page::HistoryPage => self.set_page(Page::HistoryPage),
+                        Page::RegistryPage => self.set_page(Page::RegistryPage),
                         Page::HelpPage => self.set_page(Page::HelpPage),
                     },
                 },

@@ -1,3 +1,12 @@
+use crate::errors::{AppError, AppResult};
+use crate::font_ex::create_big_text;
+use crate::models::device::MappedDevice;
+use crate::tui::app::PageState;
+use crate::tui::widgets::device_info::DeviceInfo;
+use crate::tui::widgets::device_list::DeviceList;
+use crate::tui::widgets::device_search::DeviceSearch;
+use crate::tui::widgets::error::ErrorWidget;
+use crate::usb::registry::get_usb_from_db;
 use crossterm::event::{Event, KeyCode};
 use ratatui::Frame;
 use ratatui::layout::{Alignment, Constraint, Layout, Rect};
@@ -7,22 +16,13 @@ use ratatui::text::Line;
 use ratatui::widgets::{Paragraph, Widget};
 use tokio::sync::oneshot;
 
-use crate::errors::{AppError, AppResult};
-use crate::font::create_big_text;
-use crate::models::device::MappedDevice;
-use crate::tui::app::PageState;
-use crate::tui::widgets::device_info::DeviceInfo;
-use crate::tui::widgets::device_list::DeviceList;
-use crate::tui::widgets::error::ErrorWidget;
-use crate::usb::history::get_history_usb_mapped;
-
-pub struct HistoryPage {
+pub struct RegistryPage {
     device_list: Option<DeviceList>,
     state: PageState,
     rx: Option<oneshot::Receiver<AppResult<Vec<MappedDevice>>>>,
 }
 
-impl HistoryPage {
+impl RegistryPage {
     const TEXT_COLOR: Color = SLATE.c400;
 
     pub fn new() -> Self {
@@ -40,7 +40,8 @@ impl HistoryPage {
         self.state = PageState::Loading;
 
         tokio::spawn(async move {
-            let result = get_history_usb_mapped(&pool).await;
+            //TODO!!!!!!!!
+            let result = get_usb_from_db(&pool).await;
             let _ = tx.send(result);
         });
     }
@@ -57,7 +58,7 @@ impl HistoryPage {
                     self.state = PageState::Loaded;
                 } else {
                     self.state = PageState::Error(AppError::BadRequest(
-                        "Не удалось загрузить промапленные носители!".to_string(),
+                        "Не удалось загрузить информацию из базы данных!".to_string(),
                     ))
                 }
             }
@@ -97,10 +98,10 @@ impl HistoryPage {
 
     fn render_loaded(&mut self, area: Rect, frame: &mut Frame) {
         if let Some(ref mut device_list) = self.device_list {
-            let page_text = create_big_text("ИСТОРИЯ", Color::Cyan);
+            let page_text = create_big_text("РЕЕСТР", Color::Cyan);
             let page_title = Paragraph::new(page_text).alignment(Alignment::Center);
 
-            let description = Paragraph::new("История подключений")
+            let description = Paragraph::new("Реестр зарегистрированных устройств")
                 .fg(Self::TEXT_COLOR)
                 .centered();
 
@@ -111,17 +112,25 @@ impl HistoryPage {
             ])
             .areas(area);
 
+            // ======== TODO =========
+
             let [list_area, details_area] =
                 Layout::horizontal([Constraint::Percentage(33), Constraint::Percentage(67)])
                     .areas(content_layout);
 
+            let [content_high, content_low] =
+                Layout::vertical([Constraint::Percentage(10), Constraint::Percentage(98)])
+                    .areas(list_area);
+
             Widget::render(page_title, title_layout, frame.buffer_mut());
             Widget::render(description, desc_layout, frame.buffer_mut());
 
-            device_list.render_list(list_area, frame.buffer_mut());
+            device_list.render_list(content_low, frame.buffer_mut());
 
             let selected_device = device_list.get_selected();
-            DeviceInfo::render(selected_device, details_area, frame.buffer_mut(), true);
+            DeviceInfo::render(selected_device, details_area, frame.buffer_mut(), false);
+            // поиск
+            DeviceSearch::render(content_high, frame.buffer_mut());
         }
     }
 

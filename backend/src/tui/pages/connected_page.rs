@@ -97,7 +97,6 @@ impl ConnectedPage {
 
     fn render_loaded(&mut self, area: Rect, frame: &mut Frame) {
         if let Some(ref mut device_list) = self.device_list {
-
             let page_text = create_big_text("АКТИВНЫЕ", Color::Cyan);
             let page_title = Paragraph::new(page_text).alignment(Alignment::Center);
 
@@ -122,7 +121,7 @@ impl ConnectedPage {
             device_list.render_list(list_area, frame.buffer_mut());
 
             let selected_device = device_list.get_selected();
-            DeviceInfo::render(selected_device, details_area, frame.buffer_mut());
+            DeviceInfo::render(selected_device, details_area, frame.buffer_mut(), true);
         }
     }
 

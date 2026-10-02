@@ -7,8 +7,8 @@ use std::fs::File;
 use std::thread;
 use std::time::Duration;
 
-use winreg::RegKey;
-use winreg::enums::*;
+#[cfg(target_os = "windows")]
+use winreg::{RegKey, enums::*};
 
 pub async fn get_history_usb() -> Result<Vec<UsbDevice>, AppError> {
     let file = File::open("./usb.csv")?;
@@ -23,7 +23,22 @@ pub async fn get_history_usb() -> Result<Vec<UsbDevice>, AppError> {
     }
     Ok(result)
 }
+#[cfg(target_os = "linux")]
+pub async fn get_history_usb_from_os() -> Result<Vec<UsbDevice>, AppError> {
+    let file = File::open("./usb.csv")?;
+    let mut rdr = csv::ReaderBuilder::new()
+        .delimiter(b';')
+        .has_headers(false)
+        .from_reader(file);
+    let mut result = vec![];
+    for r in rdr.deserialize() {
+        let record: UsbDevice = r?;
+        result.push(record)
+    }
+    Ok(result)
+}
 
+#[cfg(target_os = "windows")]
 pub async fn get_history_usb_from_os() -> Result<Vec<UsbDevice>, AppError> {
     let mut usb_devices = Vec::new();
 

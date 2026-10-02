@@ -9,7 +9,7 @@ use crate::models::device::MappedDevice;
 pub struct DeviceInfo;
 
 impl DeviceInfo {
-    pub fn render(device: Option<&MappedDevice>, area: Rect, buf: &mut Buffer) {
+    pub fn render(device: Option<&MappedDevice>, area: Rect, buf: &mut Buffer, ex: bool) {
         let Some(dev) = device else {
             let placeholder = Paragraph::new("Выберите устройство для просмотра деталей...")
                 .alignment(ratatui::layout::Alignment::Center);
@@ -18,7 +18,7 @@ impl DeviceInfo {
         };
 
         // Формируем текст с детальной информацией
-        let text = device_info(&dev);
+        let text = device_info(&dev, ex);
 
         let block = Block::default()
             .borders(Borders::ALL)
@@ -30,10 +30,10 @@ impl DeviceInfo {
     }
 }
 
-fn device_info(dev: &MappedDevice) -> Vec<Line<'static>> {
+fn device_info(dev: &MappedDevice, ex: bool) -> Vec<Line<'static>> {
     let register_info = register_info(dev);
-    let special_dev = is_special(dev);
-    let internet = is_internet(dev);
+    let special_dev = is_special(dev, ex);
+    let internet = is_internet(dev, ex);
     let max_secclas = show_maxsecclass(dev);
     let mut lines = vec![
         Line::from(format!(
@@ -99,30 +99,36 @@ fn register_info(dev: &MappedDevice) -> Vec<Line<'static>> {
     }
 }
 
-fn is_special(dev: &MappedDevice) -> Vec<Line<'static>> {
+fn is_special(dev: &MappedDevice, ex: bool) -> Vec<Line<'static>> {
+    let mut lines = vec![];
     if dev.special {
-        vec![
+        lines.push(
             Line::from("СПЕЦИАЛЬНОЕ ДЕЛОПРОИЗВОДСТВО")
                 .style(Color::Red)
                 .bold(),
-            Line::from(
-                "если ваш диск не зарегистрирован на участке СПЕЦИАЛЬНОГО делопроизводства - Вы попали!",
-            ),
-        ]
-    } else {
-        vec![]
+        );
+        if ex {
+            lines.push(
+                Line::from(
+                    "если ваш диск не зарегистрирован на участке СПЕЦИАЛЬНОГО делопроизводства - Вы попали!",
+                )
+            );
+        }
     }
+    lines
 }
 
-fn is_internet(dev: &MappedDevice) -> Vec<Line<'static>> {
+fn is_internet(dev: &MappedDevice, ex: bool) -> Vec<Line<'static>> {
+    let mut lines = vec![];
     if !dev.secret {
-        vec![
-            Line::from("ДЛЯ АП ИНТЕРНЕТ").style(Color::Red).bold(),
-            Line::from("Если вы сидите за ОВТ и видите это сообщение - Вы попали!"),
-        ]
-    } else {
-        vec![]
-    }
+        lines.push(Line::from("ДЛЯ АП ИНТЕРНЕТ").style(Color::Red).bold());
+        if ex {
+            lines.push(Line::from(
+                "Если вы сидите за ОВТ и видите это сообщение - Вы попали!",
+            ));
+        }
+    } 
+    lines
 }
 
 fn show_maxsecclass(dev: &MappedDevice) -> Vec<Line<'static>> {

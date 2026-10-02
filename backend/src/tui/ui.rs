@@ -26,6 +26,7 @@ impl Ui {
         match app.page {
             Page::ConnectedPage => app.connected_page.render_page(content_area, frame),
             Page::HistoryPage => app.history_page.render_page(content_area, frame),
+            Page::RegistryPage => app.registry_page.render_page(content_area, frame),
             Page::HelpPage => app.help_page.render_page(content_area, frame),
         };
         frame.render_widget(block, frame.area());

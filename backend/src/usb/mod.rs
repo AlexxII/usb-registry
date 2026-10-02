@@ -1,3 +1,4 @@
 pub mod history;
 pub mod current;
 pub mod utils;
+pub mod registry;
