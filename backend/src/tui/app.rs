@@ -87,6 +87,7 @@ impl App {
             match events::map_event(event) {
                 Some(event) => match event {
                     AppEvent::Quit => self.exit(),
+                    // AppEvent::Quit => {},
                     AppEvent::ChangePage(page) => match page {
                         Page::ConnectedPage => self.set_page(Page::ConnectedPage),
                         Page::HistoryPage => self.set_page(Page::HistoryPage),

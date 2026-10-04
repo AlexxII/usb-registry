@@ -26,6 +26,7 @@ ratatui = "0.30.2"
 crossterm = "0.29.0"
 tui-big-text = "0.8.9"
 csv = "1.4.0"
+tui-input = "0.15.5"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.56.0"

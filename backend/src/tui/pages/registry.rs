@@ -4,7 +4,7 @@ use crate::models::device::MappedDevice;
 use crate::tui::app::PageState;
 use crate::tui::widgets::device_info::DeviceInfo;
 use crate::tui::widgets::device_list::DeviceList;
-use crate::tui::widgets::device_search::DeviceSearch;
+use crate::tui::widgets::device_search::{self, DeviceSearch, InputMode};
 use crate::tui::widgets::error::ErrorWidget;
 use crate::usb::registry::get_usb_from_db;
 use crossterm::event::{Event, KeyCode};
@@ -19,6 +19,7 @@ use tokio::sync::oneshot;
 pub struct RegistryPage {
     device_list: Option<DeviceList>,
     state: PageState,
+    device_search: DeviceSearch,
     rx: Option<oneshot::Receiver<AppResult<Vec<MappedDevice>>>>,
 }
 
@@ -29,6 +30,7 @@ impl RegistryPage {
         Self {
             state: PageState::Loading,
             device_list: None,
+            device_search: DeviceSearch::new(),
             rx: None,
         }
     }
@@ -55,6 +57,7 @@ impl RegistryPage {
             Ok(Ok(devices)) => {
                 if !devices.is_empty() {
                     self.device_list = Some(DeviceList::new(devices));
+                    //
                     self.state = PageState::Loaded;
                 } else {
                     self.state = PageState::Error(AppError::BadRequest(
@@ -97,74 +100,79 @@ impl RegistryPage {
     }
 
     fn render_loaded(&mut self, area: Rect, frame: &mut Frame) {
+        let page_text = create_big_text("РЕЕСТР", Color::Cyan);
+        let page_title = Paragraph::new(page_text).alignment(Alignment::Center);
+
+        let description = Paragraph::new("Реестр зарегистрированных устройств")
+            .fg(Self::TEXT_COLOR)
+            .centered();
+
+        let [title_layout, desc_layout, content_layout] = Layout::vertical([
+            Constraint::Length(6),
+            Constraint::Length(1),
+            Constraint::Min(0),
+        ])
+        .areas(area);
+
+        // ======== TODO =========
+
+        let [list_area, details_area] =
+            Layout::horizontal([Constraint::Percentage(33), Constraint::Percentage(67)])
+                .areas(content_layout);
+
+        let [search_area, list_area] =
+            Layout::vertical([Constraint::Percentage(20), Constraint::Percentage(80)])
+                .areas(list_area);
+
+        Widget::render(page_title, title_layout, frame.buffer_mut());
+        Widget::render(description, desc_layout, frame.buffer_mut());
+        self.device_search.render(frame, search_area);
+
         if let Some(ref mut device_list) = self.device_list {
-            let page_text = create_big_text("РЕЕСТР", Color::Cyan);
-            let page_title = Paragraph::new(page_text).alignment(Alignment::Center);
-
-            let description = Paragraph::new("Реестр зарегистрированных устройств")
-                .fg(Self::TEXT_COLOR)
-                .centered();
-
-            let [title_layout, desc_layout, content_layout] = Layout::vertical([
-                Constraint::Length(6),
-                Constraint::Length(1),
-                Constraint::Min(0),
-            ])
-            .areas(area);
-
-            // ======== TODO =========
-
-            let [list_area, details_area] =
-                Layout::horizontal([Constraint::Percentage(33), Constraint::Percentage(67)])
-                    .areas(content_layout);
-
-            let [content_high, content_low] =
-                Layout::vertical([Constraint::Percentage(10), Constraint::Percentage(98)])
-                    .areas(list_area);
-
-            Widget::render(page_title, title_layout, frame.buffer_mut());
-            Widget::render(description, desc_layout, frame.buffer_mut());
-
-            device_list.render_list(content_low, frame.buffer_mut());
+            device_list.render_list(list_area, frame.buffer_mut());
 
             let selected_device = device_list.get_selected();
             DeviceInfo::render(selected_device, details_area, frame.buffer_mut(), false);
             // поиск
-            DeviceSearch::render(content_high, frame.buffer_mut());
         }
     }
 
     pub fn handle_events(&mut self, event: &Event) -> bool {
-        let Event::Key(key) = event else {
-            return false;
-        };
+        let handled = self.device_search.handle_event(event);
 
-        if !key.is_press() {
-            return false;
-        }
+        if !handled {
+            let Event::Key(key) = event else {
+                return false;
+            };
 
-        let Some(device_list) = &mut self.device_list else {
-            return false;
-        };
+            if !key.is_press() {
+                return false;
+            }
 
-        match key.code {
-            KeyCode::Down | KeyCode::Char('j') => {
-                device_list.select_next();
-                return true;
+            let Some(device_list) = &mut self.device_list else {
+                return false;
+            };
+            match key.code {
+                KeyCode::Down | KeyCode::Char('j') => {
+                    device_list.select_next();
+                    return true;
+                }
+                KeyCode::Up | KeyCode::Char('k') => {
+                    device_list.select_previous();
+                    return true;
+                }
+                KeyCode::Char('G') => {
+                    device_list.select_last();
+                    return true;
+                }
+                KeyCode::Char('g') => {
+                    device_list.select_first();
+                    return true;
+                }
+                _ => false,
             }
-            KeyCode::Up | KeyCode::Char('k') => {
-                device_list.select_previous();
-                return true;
-            }
-            KeyCode::Char('G') => {
-                device_list.select_last();
-                return true;
-            }
-            KeyCode::Char('g') => {
-                device_list.select_first();
-                return true;
-            }
-            _ => false,
+        } else {
+            return true;
         }
     }
 }
