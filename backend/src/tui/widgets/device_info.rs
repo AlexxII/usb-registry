@@ -121,13 +121,22 @@ fn is_special(dev: &MappedDevice, ex: bool) -> Vec<Line<'static>> {
 fn is_internet(dev: &MappedDevice, ex: bool) -> Vec<Line<'static>> {
     let mut lines = vec![];
     if !dev.secret {
+        lines.push(Line::from("ЗАРЕГИСТРИРОВАН").style(Color::Green).bold());
+        lines.push(Line::from(format!(
+            "Рег.№: {}",
+            dev.register_number.as_deref().unwrap_or("-")
+        )));
+        lines.push(Line::from(format!(
+            "Владелец: {}",
+            dev.owner.as_deref().unwrap_or("-")
+        )));
         lines.push(Line::from("ДЛЯ АП ИНТЕРНЕТ").style(Color::Red).bold());
         if ex {
             lines.push(Line::from(
                 "Если вы сидите за ОВТ и видите это сообщение - Вы попали!",
             ));
         }
-    } 
+    }
     lines
 }
 

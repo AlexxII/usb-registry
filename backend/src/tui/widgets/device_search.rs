@@ -38,27 +38,33 @@ impl DeviceSearch {
         self.render_input(frame, input_area);
     }
 
-    pub fn handle_event(&mut self, event: &Event) -> bool {
+    pub fn handle_event(&mut self, event: &Event) -> Option<String> {
         let Event::Key(key) = event else {
-            return false;
+            return None;
         };
         match self.input_mode {
             InputMode::Normal => match key.code {
                 KeyCode::Char('e') => {
                     self.start_editing();
-                    return true;
+                    None
                 }
-                _ => return false,
+                _ => None,
             },
             InputMode::Editing => match key.code {
-                KeyCode::Esc => self.stop_editing(),
+                KeyCode::Esc => {
+                    self.stop_editing();
+                    Some(self.input.value().to_string())
+                }
+                KeyCode::Enter => {
+                    self.stop_editing();
+                    Some(self.input.value().to_string())
+                }
                 _ => {
                     self.input.handle_event(event);
-                    return true;
+                    Some(self.input.value().to_string())
                 }
             },
         }
-        false
     }
 
     fn start_editing(&mut self) {
@@ -78,7 +84,7 @@ impl DeviceSearch {
             ],
             InputMode::Editing => [
                 "Жми ".to_span(),
-                "Esc".bold(),
+                "Esc или Enter".bold(),
                 " чтобы закончить.".to_span(),
             ],
         });
