@@ -121,7 +121,7 @@ impl ConnectedPage {
             device_list.render_list(list_area, frame.buffer_mut());
 
             let selected_device = device_list.get_selected();
-            DeviceInfo::render(selected_device, details_area, frame.buffer_mut(), true);
+            DeviceInfo::render(selected_device, details_area, frame.buffer_mut(), true, None);
         }
     }
 

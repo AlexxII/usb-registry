@@ -131,7 +131,14 @@ impl RegistryPage {
             device_list.render_list(list_area, frame.buffer_mut());
 
             let selected_device = device_list.get_selected();
-            DeviceInfo::render(selected_device, details_area, frame.buffer_mut(), false);
+
+            // пользовательский поиск
+            let query = match self.device_search.input.value() {
+                "" => None,
+                q => Some(q)
+            };
+            
+            DeviceInfo::render(selected_device, details_area, frame.buffer_mut(), false, query);
         } else {
             let message = Paragraph::new(vec![
                 Line::from("Начните ввод для поиска. Минимум 2 символа."),
