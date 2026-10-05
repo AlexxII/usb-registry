@@ -1,9 +1,11 @@
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
-use ratatui::style::Color;
 use ratatui::style::palette::tailwind::SLATE;
+use ratatui::style::{Color, Style, Stylize};
 use ratatui::text::Line;
-use ratatui::widgets::{HighlightSpacing, List, ListItem, ListState, StatefulWidget};
+use ratatui::widgets::{
+    HighlightSpacing, List, ListItem, ListState, Paragraph, StatefulWidget, Widget,
+};
 
 use crate::models::device::MappedDevice;
 
@@ -37,14 +39,28 @@ impl DeviceList {
             .iter()
             .map(|device| ListItem::from(device))
             .collect();
-        let list = List::new(items)
-            .highlight_symbol(">")
-            .highlight_spacing(HighlightSpacing::Always);
 
-        StatefulWidget::render(list, area, buf, &mut self.state);
+        if !items.is_empty() {
+            let list = List::new(items)
+                .highlight_symbol(">")
+                .highlight_spacing(HighlightSpacing::Always);
+
+            StatefulWidget::render(list, area, buf, &mut self.state);
+        } else {
+            let text = Paragraph::new("[ НЕТ ПОДКЛЮЧЕННЫХ НОСИТЕЛЕЙ ]")
+                .centered()
+                .italic()
+                .style(Style::default().fg(Color::Magenta));
+
+            Widget::render(text, area, buf);
+        }
     }
 
     pub fn select_next(&mut self) {
+        if self.items.is_empty() {
+            return;
+        }
+
         match self.state.selected() {
             None => {
                 self.state.select_next();

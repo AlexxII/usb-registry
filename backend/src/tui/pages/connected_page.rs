@@ -4,7 +4,7 @@ use ratatui::layout::{Alignment, Constraint, Layout, Rect};
 use ratatui::style::palette::tailwind::SLATE;
 use ratatui::style::{Color, Stylize};
 use ratatui::text::Line;
-use ratatui::widgets::{Paragraph, Widget};
+use ratatui::widgets::{Paragraph, Widget, Wrap};
 use tokio::sync::oneshot;
 
 use crate::errors::{AppError, AppResult};
@@ -20,26 +20,31 @@ pub struct ConnectedPage {
     device_list: Option<DeviceList>,
     state: PageState,
     rx: Option<oneshot::Receiver<AppResult<Vec<MappedDevice>>>>,
+    pool: sqlx::SqlitePool,
 }
 
 impl ConnectedPage {
     const TEXT_COLOR: Color = SLATE.c400;
 
-    pub fn new() -> Self {
+    pub fn new(pool: sqlx::SqlitePool) -> Self {
         Self {
             state: PageState::Loading,
             device_list: None,
             rx: None,
+            pool,
         }
     }
 
-    pub fn load(&mut self, pool: sqlx::SqlitePool) {
+    pub fn refresh(&mut self) {
+        let pool = self.pool.clone();
+
         let (tx, rx) = oneshot::channel();
 
         self.rx = Some(rx);
         self.state = PageState::Loading;
 
         tokio::spawn(async move {
+            // получаем подключенные устройста и маппим их
             let result = get_current_usb_mapped(&pool).await;
             let _ = tx.send(result);
         });
@@ -52,14 +57,18 @@ impl ConnectedPage {
 
         match rx.try_recv() {
             Ok(Ok(devices)) => {
-                if !devices.is_empty() {
-                    self.device_list = Some(DeviceList::new(devices));
-                    self.state = PageState::Loaded;
-                } else {
-                    self.state = PageState::Error(AppError::BadRequest(
-                        "Не удалось загрузить промапленные носители!".to_string(),
-                    ))
-                }
+                self.device_list = Some(DeviceList::new(devices));
+                self.state = PageState::Loaded;
+                // if !devices.is_empty() {
+                //     self.device_list = Some(DeviceList::new(devices));
+                //     self.state = PageState::Loaded;
+                // } else {
+                //     // +++++++++++++++++++++++ TODO ++++++++++++++++++++++++++++
+                //     // нужно отобразить, что ничего не подключено
+                //     self.state = PageState::Error(AppError::BadRequest(
+                //         "Не удалось загрузить промапленные носители!".to_string(),
+                //     ))
+                // }
             }
 
             Ok(Err(error)) => {
@@ -115,13 +124,30 @@ impl ConnectedPage {
                 Layout::horizontal([Constraint::Percentage(33), Constraint::Percentage(67)])
                     .areas(content_layout);
 
+            let [info_area, result_area] =
+                Layout::vertical([Constraint::Length(2), Constraint::Percentage(95)])
+                    .areas(list_area);
+
             Widget::render(page_title, title_layout, frame.buffer_mut());
             Widget::render(description, desc_layout, frame.buffer_mut());
+            let info = Paragraph::new(vec![
+                Line::from("Нажмите F5 для обновления списка").italic(),
+            ])
+            .centered()
+            .wrap(Wrap { trim: true });
 
-            device_list.render_list(list_area, frame.buffer_mut());
+            Widget::render(info, info_area, frame.buffer_mut());
+
+            device_list.render_list(result_area, frame.buffer_mut());
 
             let selected_device = device_list.get_selected();
-            DeviceInfo::render(selected_device, details_area, frame.buffer_mut(), true, None);
+            DeviceInfo::render(
+                selected_device,
+                details_area,
+                frame.buffer_mut(),
+                true,
+                None,
+            );
         }
     }
 
@@ -149,6 +175,10 @@ impl ConnectedPage {
             }
             KeyCode::Char('G') => {
                 device_list.select_last();
+                return true;
+            }
+            KeyCode::F(5) => {
+                self.refresh();
                 return true;
             }
             KeyCode::Char('g') => {

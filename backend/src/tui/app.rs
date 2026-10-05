@@ -38,8 +38,8 @@ pub enum PageState {
 
 impl App {
     pub fn new(pool: SqlitePool) -> Self {
-        let mut connected_page = ConnectedPage::new();
-        connected_page.load(pool.clone());
+        let mut connected_page = ConnectedPage::new(pool.clone());
+        connected_page.refresh();
 
         let mut history_page = HistoryPage::new();
         history_page.load(pool.clone());

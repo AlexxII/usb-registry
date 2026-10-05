@@ -16,9 +16,14 @@ impl DeviceInfo {
         ex: bool,
         query: Option<&str>,
     ) {
+        let block = Block::default()
+            .borders(Borders::ALL)
+            .padding(Padding::new(1, 0, 1, 0))
+            .title(" Детальная информация ");
+
         let Some(dev) = device else {
             let placeholder = Paragraph::new("Выберите устройство для просмотра деталей...")
-                .alignment(ratatui::layout::Alignment::Center);
+                .alignment(ratatui::layout::Alignment::Center).block(block);
             placeholder.render(area, buf);
             return;
         };
@@ -26,10 +31,6 @@ impl DeviceInfo {
         // Формируем текст с детальной информацией
         let text = device_info(&dev, ex, query);
 
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .padding(Padding::new(1, 0, 1, 0))
-            .title(" Детальная информация ");
 
         let paragraph = Paragraph::new(text).block(block);
         paragraph.render(area, buf);
