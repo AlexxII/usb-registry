@@ -74,7 +74,7 @@ fn device_info(dev: &MappedDevice, ex: bool, query: Option<&str>) -> Vec<Line<'s
         lines.extend(internet);
     } else {
         lines.push(
-            Line::from("УСТРОЙСТВО не ЗАРЕГИСТРИРОВАН!")
+            Line::from("УСТРОЙСТВО не ЗАРЕГИСТРИРОВАНО!")
                 .style(Color::Red)
                 .bold(),
         );

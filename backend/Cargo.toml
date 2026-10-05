@@ -27,6 +27,12 @@ crossterm = "0.29.0"
 tui-big-text = "0.8.9"
 csv = "1.4.0"
 tui-input = "0.15.5"
+usb_enumeration = "0.2.1"
 
 [target.'cfg(windows)'.dependencies]
 winreg = "0.56.0"
+windows = { version = "0.58", features = [
+    "Win32_Devices_DeviceAndDriverInstallation",
+    "Win32_Devices_Usb",
+    "Win32_Foundation",
+] }

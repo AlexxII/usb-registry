@@ -4,7 +4,8 @@ use crate::db::devices::{
     update_device,
 };
 use crate::errors::{AppError, AppResult, BatchErrorItem};
-use crate::models::device::{Device, DeviceImport, DeviceUpload};
+use crate::models::device::{Device, DeviceImport, DeviceUpload, MappedDevice, UsbDevice};
+use crate::os::{get_current_usb_flash_drives, get_history_usb_from_os};
 use crate::usb::current::get_current_usb_mapped_e;
 use std::{fs, usize};
 
@@ -17,6 +18,8 @@ pub fn router() -> Router<AppState> {
     Router::new()
         .route("/usb/devices/file", get(list_devices_from_file))
         .route("/usb/devices", get(list_devices))
+        .route("/usb/devices/connected", get(connected_devices))
+        .route("/usb/devices/history", get(history_devices))
         .route("/usb/devices/all", get(list_devices_all))
         .route("/usb/devices", post(create_device))
         .route("/usb/devices", delete(delete_devices))
@@ -34,6 +37,16 @@ pub fn router() -> Router<AppState> {
 async fn list_devices_from_file(State(_): State<AppState>) -> AppResult<Json<Vec<Device>>> {
     let content = fs::read_to_string("src/devices.json").expect("read");
     let devices: Vec<Device> = serde_json::from_str(&content).expect("read");
+    Ok(Json(devices))
+}
+
+async fn connected_devices(State(_): State<AppState>) -> AppResult<Json<Vec<UsbDevice>>> {
+    let devices = get_current_usb_flash_drives().await?;
+    Ok(Json(devices))
+}
+
+async fn history_devices(State(_): State<AppState>) -> AppResult<Json<Vec<UsbDevice>>> {
+    let devices = get_history_usb_from_os().await?;
     Ok(Json(devices))
 }
 
