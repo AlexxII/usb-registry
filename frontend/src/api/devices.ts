@@ -10,6 +10,30 @@ export async function getDevicesFromFile(): Promise<UsbFlashDevice[]> {
   return response.json();
 }
 
+export async function getConnectedDevices(): Promise<UsbFlashDevice[]> {
+  const response = await fetch(`${URL}/connected`);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function getConnectedDevicesEx(): Promise<UsbFlashDevice[]> {
+  const response = await fetch(`${URL}/connected-ex`);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
+export async function getHistoryDevices(): Promise<UsbFlashDevice[]> {
+  const response = await fetch(`${URL}/history`);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  return response.json();
+}
+
 export async function getDevices(): Promise<UsbFlashDevice[]> {
   const response = await fetch(URL);
   if (!response.ok) {

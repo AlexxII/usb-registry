@@ -2,21 +2,13 @@
   import { onMount } from "svelte";
   import UsbDeviceCard from "../components/UsbDeviceCard.svelte";
   import type { UsbFlashDevice } from "../types";
+  import { getHistoryDevices } from "../api/devices";
 
-  let usbDevices = $state<UsbFlashDevice[]>([]);
+  let devices = $state<UsbFlashDevice[]>([]);
 
   onMount(async () => {
-    await getDevices();
+    devices = await getHistoryDevices();
   });
-
-  async function getDevices() {
-    try {
-      const response = await fetch("http://127.0.0.1:5151/usb/devices");
-      usbDevices = await response.json();
-    } catch (error) {
-      console.error("Ошибка загрузки USB устройств:", error);
-    }
-  }
 
   // 1. Создаем реактивное состояние для выбранного устройства
   let selectedDevice = $state<any>(null);
@@ -61,7 +53,7 @@
       </thead>
 
       <tbody>
-        {#each usbDevices as usb, index}
+        {#each devices as usb, index}
           <tr class:destroyed={usb.destroyed}>
             <td class="text-center">{index + 1}</td>
             <td class="text-center">{usb.manufacturer}</td>

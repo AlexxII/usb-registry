@@ -22,14 +22,3 @@ pub async fn get_current_usb_mapped(pool: &SqlitePool) -> Result<Vec<MappedDevic
 
     Ok(mapped_devices)
 }
-
-pub async fn get_current_usb_mapped_e(
-    State(state): State<AppState>,
-) -> AppResult<Json<Vec<MappedDevice>>> {
-    let connected_usb = get_current_usb_flash_drives().await?;
-    let usb_in_db = get_devices(&state.pool).await?;
-
-    let mapped_devices = map_devices(connected_usb, usb_in_db, true)?;
-
-    Ok(Json(mapped_devices))
-}

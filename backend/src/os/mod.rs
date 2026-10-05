@@ -7,7 +7,7 @@ pub fn database_path() -> PathBuf {
 #[cfg(target_os = "linux")]
 pub mod os_linux;
 #[cfg(target_os = "linux")]
-pub use os_linux::get_history_usb_flash_drives;
+pub use os_linux::get_current_usb_flash_drives;
 #[cfg(target_os = "linux")]
 pub use os_linux::get_history_usb_from_os;
 

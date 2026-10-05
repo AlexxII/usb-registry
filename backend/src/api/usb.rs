@@ -5,8 +5,9 @@ use crate::db::devices::{
 };
 use crate::errors::{AppError, AppResult, BatchErrorItem};
 use crate::models::device::{Device, DeviceImport, DeviceUpload, MappedDevice, UsbDevice};
-use crate::os::{get_current_usb_flash_drives, get_history_usb_from_os};
-use crate::usb::current::get_current_usb_mapped_e;
+use crate::os::get_current_usb_flash_drives;
+use crate::usb::current::get_current_usb_mapped;
+use crate::usb::history::get_history_usb_mapped;
 use std::{fs, usize};
 
 use axum::extract::{Path, State};
@@ -19,6 +20,7 @@ pub fn router() -> Router<AppState> {
         .route("/usb/devices/file", get(list_devices_from_file))
         .route("/usb/devices", get(list_devices))
         .route("/usb/devices/connected", get(connected_devices))
+        .route("/usb/devices/connected-ex", get(connected_devices_ex))
         .route("/usb/devices/history", get(history_devices))
         .route("/usb/devices/all", get(list_devices_all))
         .route("/usb/devices", post(create_device))
@@ -29,8 +31,6 @@ pub fn router() -> Router<AppState> {
         .route("/usb/devices/{id}/force", delete(force_delet_device))
         .route("/usb/devices/{id}/destroy", put(mark_destroyed))
         .route("/usb/devices/{id}/undestroy", put(unmark_destroyed))
-        .route("/usb/current", get(get_current_usb_mapped_e))
-    // .route("/usb/history", get(get_history))
 }
 
 #[allow(dead_code)]
@@ -40,13 +40,18 @@ async fn list_devices_from_file(State(_): State<AppState>) -> AppResult<Json<Vec
     Ok(Json(devices))
 }
 
-async fn connected_devices(State(_): State<AppState>) -> AppResult<Json<Vec<UsbDevice>>> {
+async fn connected_devices(State(state): State<AppState>) -> AppResult<Json<Vec<MappedDevice>>> {
+    let devices = get_current_usb_mapped(&state.pool).await?;
+    Ok(Json(devices))
+}
+
+async fn connected_devices_ex(State(_): State<AppState>) -> AppResult<Json<Vec<UsbDevice>>> {
     let devices = get_current_usb_flash_drives().await?;
     Ok(Json(devices))
 }
 
-async fn history_devices(State(_): State<AppState>) -> AppResult<Json<Vec<UsbDevice>>> {
-    let devices = get_history_usb_from_os().await?;
+async fn history_devices(State(state): State<AppState>) -> AppResult<Json<Vec<MappedDevice>>> {
+    let devices = get_history_usb_mapped(&state.pool).await?;
     Ok(Json(devices))
 }
 
@@ -110,7 +115,7 @@ async fn force_delet_device(
     Ok(StatusCode::OK)
 }
 
-async fn delete_devices(State(state): State<AppState>) {}
+async fn delete_devices(State(_): State<AppState>) {}
 
 #[derive(serde::Serialize)]
 struct ImportResponse {

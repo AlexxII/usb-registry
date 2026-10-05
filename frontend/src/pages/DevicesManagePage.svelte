@@ -13,12 +13,14 @@
     updateDevice,
     deleteDeviceCompletely,
     sendImport,
+    getConnectedDevicesEx,
   } from "../api/devices";
   import type { ExportUsbDevices, UsbFlashDevice } from "../types";
   import { analizeData } from "../api/utils";
   import UsbDeviceImportModal from "../components/UsbDeviceImportModal.svelte";
 
   let usbDevices = $state<UsbFlashDevice[]>([]);
+  let device = $state<UsbFlashDevice[]>([]);
   let editedDevice = $state<UsbFlashDevice | undefined>();
   let createCounter = $state(0);
   let search = $state("");
@@ -73,6 +75,11 @@
     if (event.key === "Escape") {
       selected = new Set();
     }
+  }
+
+  async function testUpdate() {
+    let devices = await getConnectedDevicesEx();
+    console.log(devices);
   }
 
   function toggleSort(field: keyof UsbFlashDevice) {
@@ -447,6 +454,7 @@
 
 <div class="space-y-4">
   <AdminGuard>
+  <button onclick={testUpdate}>TEST</button>
     <DeviceManageToolbar
       bind:search
       bind:onlyActive

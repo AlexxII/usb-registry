@@ -2,11 +2,11 @@
   import UsbDeviceCard from "../components/UsbDeviceCard.svelte";
   import NoDevices from "../components/NoDevices.svelte";
   import { onMount } from "svelte";
-  import { getDevicesFromFile } from "../api/devices";
+  import { getConnectedDevices } from "../api/devices";
   let devices: any[] = $state([]);
 
   onMount(async () => {
-    devices = await getDevicesFromFile();
+    devices = await getConnectedDevices();
   });
 </script>
 
