@@ -1,4 +1,4 @@
-import type { UsbFlashDevice } from "../types";
+import type { ConnectedUsb, UsbFlashDevice } from "../types";
 
 const URL = "http://127.0.0.1:5151/usb/devices";
 
@@ -18,7 +18,7 @@ export async function getConnectedDevices(): Promise<UsbFlashDevice[]> {
   return response.json();
 }
 
-export async function getConnectedDevicesEx(): Promise<UsbFlashDevice[]> {
+export async function getConnectedDevicesEx(): Promise<ConnectedUsb[]> {
   const response = await fetch(`${URL}/connected-ex`);
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`);

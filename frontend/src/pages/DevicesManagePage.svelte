@@ -15,7 +15,11 @@
     sendImport,
     getConnectedDevicesEx,
   } from "../api/devices";
-  import type { ExportUsbDevices, UsbFlashDevice } from "../types";
+  import type {
+    ConnectedUsb,
+    ExportUsbDevices,
+    UsbFlashDevice,
+  } from "../types";
   import { analizeData } from "../api/utils";
   import UsbDeviceImportModal from "../components/UsbDeviceImportModal.svelte";
 
@@ -24,6 +28,7 @@
   let editedDevice = $state<UsbFlashDevice | undefined>();
   let createCounter = $state(0);
   let search = $state("");
+  let connectedDevices = $state<ConnectedUsb[]>([]);
 
   let onlyRegistered = $state(false);
   let onlySecret = $state(false);
@@ -362,6 +367,15 @@
     }
   }
 
+  async function checkConnected() {
+    try {
+      let connectedDevices = await getConnectedDevicesEx();
+      console.log(connectedDevices);
+    } catch (error) {
+      alert("Не удалось получить список подключенных устройств");
+    }
+  }
+
   // импорт устройств
   async function importData(payload: { fileName: string; content: string }) {
     try {
@@ -435,7 +449,12 @@
 <dialog bind:this={modalRef} class="modal" onclose={handleDialogClose}>
   <div class="modal-box max-w-2xl">
     {#key editedDevice?.id ?? `new-${createCounter}`}
-      <UsbDeviceForm device={editedDevice} {save} />
+      <UsbDeviceForm
+        device={editedDevice}
+        {checkConnected}
+        {connectedDevices}
+        {save}
+      />
     {/key}
   </div>
 
@@ -454,7 +473,7 @@
 
 <div class="space-y-4">
   <AdminGuard>
-  <button onclick={testUpdate}>TEST</button>
+    <button onclick={testUpdate}>TEST</button>
     <DeviceManageToolbar
       bind:search
       bind:onlyActive

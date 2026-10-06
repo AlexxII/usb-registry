@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import UsbDeviceCard from "../components/UsbDeviceCard.svelte";
   import type { UsbFlashDevice } from "../types";
-  import { getHistoryDevices } from "../api/devices";
+    import { getHistoryDevices } from "../api/devices";
 
   let devices = $state<UsbFlashDevice[]>([]);
 

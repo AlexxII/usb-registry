@@ -60,3 +60,7 @@ export type ExportUsbDevices = {
   deleted: boolean
 };
 
+export type ConnectedUsb = {
+  manufacturer: string;
+  serial: string;
+}

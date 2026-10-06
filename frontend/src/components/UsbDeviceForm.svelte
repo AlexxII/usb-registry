@@ -1,11 +1,15 @@
 <script lang="ts">
-  import type { UsbFlashDevice, FormData } from "../types";
+  import type { UsbFlashDevice, FormData, ConnectedUsb } from "../types";
 
   let {
     device,
+    connectedDevices,
+    checkConnected,
     save,
   }: {
     device?: UsbFlashDevice;
+    connectedDevices?: ConnectedUsb[];
+    checkConnected: () => void;
     save: (payload: UsbFlashDevice) => void;
   } = $props();
 
@@ -60,6 +64,7 @@
 >
   <div>
     <h3 class="text-lg font-semibold">Основная информация</h3>
+    <button onclick={checkConnected}>Проверь подключения</button>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
       <label class="form-control">
