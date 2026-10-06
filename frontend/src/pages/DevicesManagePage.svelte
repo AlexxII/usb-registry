@@ -82,11 +82,6 @@
     }
   }
 
-  async function testUpdate() {
-    let devices = await getConnectedDevicesEx();
-    console.log(devices);
-  }
-
   function toggleSort(field: keyof UsbFlashDevice) {
     if (sortField === field) {
       sortDirection = sortDirection === "asc" ? "desc" : "asc";
@@ -369,8 +364,7 @@
 
   async function checkConnected() {
     try {
-      let connectedDevices = await getConnectedDevicesEx();
-      console.log(connectedDevices);
+      connectedDevices = await getConnectedDevicesEx();
     } catch (error) {
       alert("Не удалось получить список подключенных устройств");
     }
@@ -473,7 +467,6 @@
 
 <div class="space-y-4">
   <AdminGuard>
-    <button onclick={testUpdate}>TEST</button>
     <DeviceManageToolbar
       bind:search
       bind:onlyActive

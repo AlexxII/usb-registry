@@ -45,6 +45,20 @@
     }
   });
 
+  // Храним выбранное устройство (например, по серийному номеру или индексу)
+  let selectedConnected = $state<string>("");
+
+  function onConnectedSelect(value: string) {
+    selectedConnected = value;
+    const found = connectedDevices?.find(
+      (d) => (d.serial ?? d.manufacturer) === value,
+    );
+    if (found) {
+      form.manufacturer = found.manufacturer ?? "";
+      form.serial = found.serial ?? "";
+    }
+  }
+
   const isEdit = $derived(device !== undefined);
 
   function submit() {
@@ -63,9 +77,37 @@
   }}
 >
   <div>
-    <h3 class="text-lg font-semibold">Основная информация</h3>
-    <button onclick={checkConnected}>Проверь подключения</button>
+    <div class="flex items-center justify-between gap-2">
+      <h3 class="text-lg font-semibold">Основная информация</h3>
+      <button type="button" class="btn btn-xs" onclick={checkConnected}>
+        Проверь подключения
+      </button>
+    </div>
 
+    {#if connectedDevices && connectedDevices.length > 0}
+      <div class="mt-5">
+        <label class="form-control">
+          <div class="flex justify-between">
+            <div class="label">
+              <span class="label-text">Подключённые USB-устройства: </span>
+            </div>
+            <select
+              class="select select-bordered"
+              bind:value={selectedConnected}
+              onchange={(e) => onConnectedSelect(e.currentTarget.value)}
+            >
+              <option value="">— Выберите устройство —</option>
+              {#each connectedDevices as dev, i (dev.serial ?? i)}
+                <option value={dev.serial ?? dev.manufacturer}>
+                  {dev.manufacturer ?? "Unknown"} — {dev.serial ??
+                    "нет серийного"}
+                </option>
+              {/each}
+            </select>
+          </div>
+        </label>
+      </div>
+    {/if}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
       <label class="form-control">
         <div class="label">
