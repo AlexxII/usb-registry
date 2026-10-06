@@ -81,7 +81,6 @@ impl App {
             Page::HistoryPage => self.history_page.handle_events(&event),
             Page::RegistryPage => self.registry_page.handle_events(&event),
             Page::HelpPage => self.help_page.handle_events(&event),
-            _ => false,
         };
         if !handled {
             match events::map_event(event) {

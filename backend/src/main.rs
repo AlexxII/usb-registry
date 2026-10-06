@@ -1,7 +1,7 @@
 use std::env;
 use std::process::Command;
 
-use sqlx::{Error, SqlitePool};
+use sqlx::SqlitePool;
 use tokio::net::TcpListener;
 
 mod api;

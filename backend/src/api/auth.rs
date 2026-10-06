@@ -65,52 +65,52 @@ fn verify_jwt(headers: &HeaderMap) -> Result<Claims, StatusCode> {
 }
 
 // 1. ВХОД АДМИНИСТРАТОРА (Проверка пароля через БД)
-async fn check_admin_ex(
-    State(state): State<AppState>,
-    Json(payload): Json<AuthRequest>,
-) -> Result<Json<AuthResponse>, StatusCode> {
-    // Получаем хэш пароля администратора из созданной таблицы
-    let row: (String,) =
-        sqlx::query_as("SELECT password_hash FROM admins WHERE role = 'admin' LIMIT 1")
-            .fetch_one(&state.pool)
-            .await
-            .map_err(|e| {
-                eprintln!("Ошибка БД при входе: {:?}", e);
-                StatusCode::INTERNAL_SERVER_ERROR
-            })?;
-
-    let db_password_hash = row.0;
-
-    println!("Пришел пароль на бэк: [{}]", payload.password);
-    println!("Длина пришедшего пароля: {}", payload.password.len());
-
-    // Проверяем, соответствует ли введенный пароль хэшу из базы данных
-    let is_valid = verify(&payload.password, &db_password_hash)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    if !is_valid {
-        return Err(StatusCode::UNAUTHORIZED);
-    }
-
-    // Генерируем JWT-токен на 2 часа
-    let current_time = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
-    let claims = Claims {
-        sub: "admin".to_string(),
-        exp: current_time + (2 * 60 * 60),
-    };
-
-    let token = encode(
-        &Header::default(),
-        &claims,
-        &EncodingKey::from_secret(JWT_SECRET),
-    )
-    .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-
-    Ok(Json(AuthResponse { token }))
-}
+// async fn check_admin_ex(
+//     State(state): State<AppState>,
+//     Json(payload): Json<AuthRequest>,
+// ) -> Result<Json<AuthResponse>, StatusCode> {
+//     // Получаем хэш пароля администратора из созданной таблицы
+//     let row: (String,) =
+//         sqlx::query_as("SELECT password_hash FROM admins WHERE role = 'admin' LIMIT 1")
+//             .fetch_one(&state.pool)
+//             .await
+//             .map_err(|e| {
+//                 eprintln!("Ошибка БД при входе: {:?}", e);
+//                 StatusCode::INTERNAL_SERVER_ERROR
+//             })?;
+//
+//     let db_password_hash = row.0;
+//
+//     println!("Пришел пароль на бэк: [{}]", payload.password);
+//     println!("Длина пришедшего пароля: {}", payload.password.len());
+//
+//     // Проверяем, соответствует ли введенный пароль хэшу из базы данных
+//     let is_valid = verify(&payload.password, &db_password_hash)
+//         .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+//
+//     if !is_valid {
+//         return Err(StatusCode::UNAUTHORIZED);
+//     }
+//
+//     // Генерируем JWT-токен на 2 часа
+//     let current_time = SystemTime::now()
+//         .duration_since(UNIX_EPOCH)
+//         .unwrap()
+//         .as_secs();
+//     let claims = Claims {
+//         sub: "admin".to_string(),
+//         exp: current_time + (2 * 60 * 60),
+//     };
+//
+//     let token = encode(
+//         &Header::default(),
+//         &claims,
+//         &EncodingKey::from_secret(JWT_SECRET),
+//     )
+//     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+//
+//     Ok(Json(AuthResponse { token }))
+// }
 
 async fn check_admin(
     State(state): State<AppState>,

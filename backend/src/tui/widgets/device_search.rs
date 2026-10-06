@@ -1,10 +1,10 @@
 use crossterm::event::{Event, KeyCode};
 use ratatui::Frame;
 use ratatui::layout::{Constraint, Layout, Rect};
-use ratatui::style::palette::tailwind::SLATE;
+// use ratatui::style::palette::tailwind::SLATE;
 use ratatui::style::{Color, Style, Stylize};
 use ratatui::text::{Line, ToSpan};
-use ratatui::widgets::{Block, Paragraph, Widget, Wrap};
+use ratatui::widgets::{Block, Paragraph};
 use tui_input::Input;
 use tui_input::backend::crossterm::EventHandler;
 
@@ -21,7 +21,7 @@ pub enum InputMode {
 }
 
 impl DeviceSearch {
-    const TEXT_COLOR: Color = SLATE.c400;
+    // const TEXT_COLOR: Color = SLATE.c400;
 
     pub fn new() -> Self {
         Self {

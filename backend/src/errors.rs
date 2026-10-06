@@ -4,6 +4,7 @@ use axum::response::IntoResponse;
 use serde::Serialize;
 use thiserror::Error;
 
+#[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum DeviceError {
     #[error("Ошибка WinAPI: {0}")]
@@ -16,6 +17,7 @@ pub enum DeviceError {
     Mapping(String),
 }
 
+#[allow(dead_code)]
 pub enum AppError {
     Validation(String),
     BadRequest(String),

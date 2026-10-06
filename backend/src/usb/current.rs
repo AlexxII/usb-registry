@@ -1,13 +1,10 @@
 use std::thread;
 use std::time::Duration;
 
-use axum::Json;
-use axum::extract::State;
 use sqlx::SqlitePool;
 
-use crate::AppState;
 use crate::db::devices::get_devices;
-use crate::errors::{AppError, AppResult};
+use crate::errors::AppError;
 use crate::models::device::MappedDevice;
 use crate::os::get_current_usb_flash_drives;
 use crate::usb::utils::map_devices;

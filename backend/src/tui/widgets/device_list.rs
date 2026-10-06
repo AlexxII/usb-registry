@@ -15,7 +15,7 @@ pub struct DeviceList {
     pub state: ListState,
 }
 
-const NORMAL_ROW_BG: Color = SLATE.c950;
+// const NORMAL_ROW_BG: Color = SLATE.c950;
 const TEXT_FG_COLOR: Color = SLATE.c200;
 
 impl DeviceList {
