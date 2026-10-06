@@ -32,9 +32,6 @@
 </dialog>
 
 <div class="space-y-4">
-  <div class="flex justify-end">
-    <button class="btn btn-info btn-sm">Обновить</button>
-  </div>
   <div class="overflow-x-auto">
     <table class="table table-zebra">
       <thead>

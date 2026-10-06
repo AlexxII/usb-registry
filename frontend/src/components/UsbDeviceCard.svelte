@@ -117,7 +117,7 @@
             <p class="text-base-content/60 text-sm">Регистрационный №</p>
 
             <p class="font-medium">
-              {device.registerNumber}
+              {device.register_number}
             </p>
           </div>
 
