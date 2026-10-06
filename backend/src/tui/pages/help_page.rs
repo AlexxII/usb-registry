@@ -51,7 +51,7 @@ impl HelpPage {
             Line::from(vec![
                 Span::raw("Пример команды: "),
                 Span::styled(
-                    "cargo run -- server",
+                    "приложение.exe -- server",
                     Style::default()
                         .fg(Color::Magenta)
                         .add_modifier(Modifier::ITALIC),
@@ -79,7 +79,7 @@ impl HelpPage {
             Line::from(vec![
                 Span::raw("Пример команды: "),
                 Span::styled(
-                    "cargo run -- init",
+                    "приложение.exe -- init",
                     Style::default()
                         .fg(Color::Magenta)
                         .add_modifier(Modifier::ITALIC),

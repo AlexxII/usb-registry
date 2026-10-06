@@ -39,8 +39,4 @@ impl LoadingPage {
         Widget::render(page_title, title_layout, frame.buffer_mut());
         Widget::render(content, content_layout, frame.buffer_mut());
     }
-
-    pub fn handle_events(&mut self, event: &Event) -> bool {
-        false
-    }
 }
